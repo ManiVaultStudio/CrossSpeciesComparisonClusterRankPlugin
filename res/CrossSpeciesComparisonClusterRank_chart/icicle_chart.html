@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html oncontextmenu="return false;">
+<head>
+    <title>Compare CrossSpeciesComparison Cluster Hierarchy Chart</title>
+    <meta content="utf8" http-equiv="encoding">
+
+    <style></style>
+
+    <script>
+        // This prevents zooming in using CTRL + mouse wheel.
+        document.addEventListener('wheel', function (e) {
+            e.ctrlKey && e.preventDefault();
+        }, {
+            passive: false,
+        });
+        //disable shidt + text selection from mouse
+        document.onselectstart = function () {
+            return false;
+        };
+    </script>
+</head>
+<body oncontextmenu="return false;" style="overflow: hidden;">
+    <div id="my_dataviz"></div>
+    <!-- d3 -->
+    <script type="text/javascript" src="../js_libs/d3.v5.min.js"></script>
+    <!-- qt connection -->
+    <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script type="text/javascript" src="../js_libs/qwebchannel.tools.js"></script>
+    <script type="text/javascript" src="../js_libs/icicle-chart.min.js"></script>
+    <!-- plot and communication functions // this has to be loaded after the other scripts -->
+    <script src="icicle_chart.tools.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
