@@ -54,7 +54,7 @@ public:
 
     /** Store a private reference to the data set that should be displayed */
     void loadData(const mv::Datasets& datasets) override;
-
+    //void createHierarchy(qsizetype index, const Dataset<DatasetImpl>& dataset);
 public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
