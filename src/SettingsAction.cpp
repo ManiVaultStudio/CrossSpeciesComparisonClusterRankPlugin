@@ -60,8 +60,9 @@ SettingsAction::SettingsAction(QObject* parent) :
     _selectedClusterNamesVariant(this, "Selected Cluster Names Variant"),
     _filteredGeneNamesVariant(this, "Filtered Gene Names Variant"),
     _updateButtonForGeneFiltering(this, "Filter Genes Trigger"),
-    _speciesNamesDataset(this, "Species Names Dataset")
-{
+    _speciesNamesDataset(this, "Species Names Dataset"),
+    _topNGenesFilter(this, "Top N Genes Filter")
+{   
     setText("Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setToolTip("Main Points Dataset");
     _hierarchyTopClusterDataset.setToolTip("Hierarchy Top Cluster Dataset");
@@ -71,7 +72,8 @@ SettingsAction::SettingsAction(QObject* parent) :
     _filteredGeneNamesVariant.setToolTip("Filtered Gene Names Variant");
     _updateButtonForGeneFiltering.setToolTip("Filter Genes Trigger");
     _speciesNamesDataset.setToolTip("Species Names Dataset");
-
+    _topNGenesFilter.setToolTip("Top N Genes Filter");
+    _topNGenesFilter.initialize(1,100,10);
 
 
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
@@ -219,7 +221,7 @@ SettingsAction::SettingsAction(QObject* parent) :
             }
         }
 
-        QStringList  geneList= findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, 10);
+        QStringList  geneList= findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue());
         qDebug() << "\n***************************************************************************************\nGeneList of size:"<< geneList.size()<<"\n Genes";
         for (const auto& gene : geneList) {
             qDebug() << gene;
@@ -236,6 +238,13 @@ SettingsAction::SettingsAction(QObject* parent) :
         };
     connect(&_speciesNamesDataset, &DatasetPickerAction::currentIndexChanged, this, speciesNamesDatasetUpdate);
 
+    const auto topNGenesFilterUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_topNGenesFilter, &IntegralAction::valueChanged, this, topNGenesFilterUpdate);
+
+
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
@@ -244,6 +253,7 @@ SettingsAction::SettingsAction(QObject* parent) :
     _filteredGeneNamesVariant.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _updateButtonForGeneFiltering.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider | IntegralAction::WidgetFlag::LineEdit);
 
     setSerializationName("CSEC:Cross-Species Comparison Cluster Rank Settings");
 
@@ -255,7 +265,7 @@ SettingsAction::SettingsAction(QObject* parent) :
     _filteredGeneNamesVariant.setSerializationName("CSCCR:FilteredGeneNamesVariant");
     //_updateButtonForGeneFiltering.setSerializationName("CSCCR:UpdateButtonForGeneFiltering");
     _speciesNamesDataset.setSerializationName("CSCCR:SpeciesNamesDataset");
-
+    _topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
     addAction(&_mainPointsDataset);
     addAction(&_hierarchyTopClusterDataset);
     addAction(&_hierarchyMiddleClusterDataset);
@@ -263,6 +273,7 @@ SettingsAction::SettingsAction(QObject* parent) :
     addAction(&_speciesNamesDataset);
     addAction(&_selectedClusterNamesVariant);
     addAction(&_filteredGeneNamesVariant);
+    addAction(&_topNGenesFilter);
     addAction(&_updateButtonForGeneFiltering);
 
 
@@ -282,6 +293,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _selectedClusterNamesVariant.fromParentVariantMap(variantMap);
     _filteredGeneNamesVariant.fromParentVariantMap(variantMap);
     //_updateButtonForGeneFiltering.fromParentVariantMap(variantMap);
+    _topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
 
 }
@@ -298,6 +310,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _selectedClusterNamesVariant.insertIntoVariantMap(variantMap);
     _filteredGeneNamesVariant.insertIntoVariantMap(variantMap);
     //_updateButtonForGeneFiltering.insertIntoVariantMap(variantMap);
+    _topNGenesFilter.insertIntoVariantMap(variantMap);
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
 
 

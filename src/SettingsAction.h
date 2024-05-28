@@ -54,6 +54,7 @@ public: // Action getters
     VariantAction& getFilteredGeneNames() { return _filteredGeneNamesVariant; }
     TriggerAction& getUpdateButtonForGeneFiltering() { return _updateButtonForGeneFiltering; }
     DatasetPickerAction& getSpeciesNamesDataset() { return _speciesNamesDataset; }
+    IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
 
 
     
@@ -83,5 +84,6 @@ public:
     TriggerAction          _updateButtonForGeneFiltering;
     DatasetPickerAction    _speciesNamesDataset;
     std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
+    IntegralAction          _topNGenesFilter;
 
 };
