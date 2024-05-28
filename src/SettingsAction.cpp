@@ -38,6 +38,53 @@ SettingsAction::SettingsAction(QObject* parent) :
         return dataset->getDataType() == ClusterType;
         });
 
+    const auto hierarchyTopClusterDatasetUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_hierarchyTopClusterDataset, &DatasetPickerAction::currentIndexChanged, this, hierarchyTopClusterDatasetUpdate);
+
+    const auto hierarchyMiddleClusterDatasetUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_hierarchyMiddleClusterDataset, &DatasetPickerAction::currentIndexChanged, this, hierarchyMiddleClusterDatasetUpdate);
+
+
+
+    const auto hierarchyBottomClusterDatasetUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_hierarchyBottomClusterDataset, &DatasetPickerAction::currentIndexChanged, this, hierarchyBottomClusterDatasetUpdate);
+
+    const auto mainPointsDatasetUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_mainPointsDataset, &DatasetPickerAction::currentIndexChanged, this, mainPointsDatasetUpdate);
+
+
+    const auto filteredGeneNamesVariantUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_filteredGeneNamesVariant, &VariantAction::changed, this, filteredGeneNamesVariantUpdate);
+
+    const auto selectedClusterNamesVariantUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_selectedClusterNamesVariant, &VariantAction::changed, this, selectedClusterNamesVariantUpdate);
+
+    const auto updateButtonForGeneFilteringUpdate = [this]() -> void
+        {
+
+        };
+    connect(&_updateButtonForGeneFiltering, &TriggerAction::triggered, this, updateButtonForGeneFilteringUpdate);
+
+
+
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);

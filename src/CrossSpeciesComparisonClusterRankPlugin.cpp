@@ -318,19 +318,47 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
-    if (!selectedIDs.empty())
+    auto clusterDataset= _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+    auto pointsDataset= _settingsAction.getMainPointsDataset().getCurrentDataset();
+    bool isValid = false;
+    isValid= clusterDataset->getParent().getDatasetId() == pointsDataset->getId();
+
+    if (clusterDataset.isValid() && pointsDataset.isValid() && isValid)
     {
-        //qDebug() << "\nSelectedIDs: ";
-        for (const auto& id : selectedIDs)
+        std::vector<std::uint32_t> selectedIndices;
+        if (!selectedIDs.empty())
         {
-            //qDebug() << id + " ,";
+
+            auto rawData = mv::data().getDataset < Clusters>(clusterDataset.getDatasetId());
+            auto clusters= rawData->getClusters();
+            if (clusters.size() > 0)
+            {
+                for (auto cluster : clusters)
+                {
+                    auto clusterName = cluster.getName();
+                    //if selectedIDs contains cluster.getName()
+                    if (std::find(selectedIDs.begin(), selectedIDs.end(), clusterName) != selectedIDs.end())
+                    {
+                        auto clusterIndices = cluster.getIndices();
+                        selectedIndices.insert(selectedIndices.end(), clusterIndices.begin(), clusterIndices.end());
+                    }
+  
+                   
+
+                    
+                }
+            }
+
         }
-        //qDebug() << "\n";
+            pointsDataset->setSelectionIndices(selectedIndices);
+            mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
     }
     else
     {
-
+        qDebug() << "Datasets not valid";
     }
+    
+
     
 
     //// ask core for the selection set for the current data set
