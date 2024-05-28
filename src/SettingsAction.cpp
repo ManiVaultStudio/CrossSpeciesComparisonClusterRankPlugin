@@ -6,12 +6,39 @@
 #include <algorithm>
 #include <vector>
 
+QStringList  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n) {
+    QSet<QString> geneList;
+    QStringList returnGeneList;
+    
+    for (const auto& outerPair : map) {
+        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+
+        // Convert map to vector of pairs
+        std::vector<std::pair<QString, float>> geneExpressionVec(outerPair.second.begin(), outerPair.second.end());
+
+        // Sort the vector in descending order based on the expression value
+        std::sort(geneExpressionVec.begin(), geneExpressionVec.end(), [](const auto& a, const auto& b) {
+            return a.second > b.second;
+            });
+
+        // Print the top 10 genes
+        for (int i = 0; i < std::min(n, static_cast<int>(geneExpressionVec.size())); ++i) {
+            geneList.insert(geneExpressionVec[i].first);
+            //std::cout << "    Gene Name: " << geneExpressionVec[i].first.toStdString() << ", Expression Value: " << geneExpressionVec[i].second << std::endl;
+        }
+    }
+    //convert     QSet<QString> geneList; to QStringList returnGeneList;
+    for (const auto& gene : geneList) {
+        returnGeneList.push_back(gene);
+    }
+    return returnGeneList;
+}
 
 void printMap(const std::map<QString, std::map<QString, float>>& map) {
     for (const auto& outerPair : map) {
-        std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
         for (const auto& innerPair : outerPair.second) {
-            std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
+            //std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
         }
     }
 }
@@ -105,84 +132,77 @@ SettingsAction::SettingsAction(QObject* parent) :
     connect(&_selectedClusterNamesVariant, &VariantAction::changed, this, selectedClusterNamesVariantUpdate);
 
     const auto updateButtonForGeneFilteringUpdate = [this]() -> void
+    {
+        auto clusterDataset = _hierarchyBottomClusterDataset.getCurrentDataset();
+        auto pointsDataset = _mainPointsDataset.getCurrentDataset();
+        auto speciesDataset= _speciesNamesDataset.getCurrentDataset();
+        bool isValid = false;
+        _clusterNameToGeneNameToExpressionValue.clear();
+        if (clusterDataset.isValid() && pointsDataset.isValid() && speciesDataset.isValid())
         {
-            auto clusterDataset = _hierarchyBottomClusterDataset.getCurrentDataset();
-            auto pointsDataset = _mainPointsDataset.getCurrentDataset();
-            auto speciesDataset= _speciesNamesDataset.getCurrentDataset();
-            bool isValid = false;
-            _clusterNameToGeneNameToExpressionValue.clear();
-            if (clusterDataset.isValid() && pointsDataset.isValid() && speciesDataset.isValid())
+            isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId() && speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
+
+            if (isValid)
             {
-                isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId() && speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
+                QVariant variant = _selectedClusterNamesVariant.getVariant();
+                QStringList clusterList = variant.toStringList();
 
-                if (isValid)
+                QStringList speciesList;
+                auto speciesData = mv::data().getDataset<Clusters>(speciesDataset->getId());
+                auto species = speciesData->getClusters();
+                if (!species.empty())
                 {
-                    QVariant variant = _selectedClusterNamesVariant.getVariant();
-                    QStringList clusterList = variant.toStringList();
-
-                    QStringList speciesList;
-                    auto speciesData = mv::data().getDataset<Clusters>(speciesDataset->getId());
-                    auto species = speciesData->getClusters();
-                    if (species.size()>0)
+                    for (auto& specie : species)
                     {
-                        for (auto specie : species)
+                        speciesList.push_back(specie.getName());
+                    }
+                }
+                mv::Datasets filteredDatasets;
+                if (!speciesList.empty())
+                {
+                    auto allDatasets = mv::data().getAllDatasets({ PointType });
+                    for (const auto& dataset : allDatasets)
+                    {
+                        if (speciesList.contains(dataset->getGuiName()) && dataset->getDataType() == PointType)
                         {
-                            speciesList.push_back(specie.getName());
+                            filteredDatasets.push_back(dataset);
                         }
                     }
-                    mv::Datasets filteredDatasets;
-                    if (speciesList.size() > 0)
-                    {
-                        
-                        auto allDatasets = mv::data().getAllDatasets({ PointType });
-                        for (const auto& dataset : allDatasets)
-                        {
-                            if (speciesList.contains(dataset->getGuiName()) && dataset->getDataType() == PointType)
-                            {
-                                filteredDatasets.push_back(dataset);
-                            }
-                        }
-                    }
+                }
 
-
-                    if (filteredDatasets.size()>0)
-                    {
+                if (!filteredDatasets.empty())
+                {
                     for (const auto& dataset : filteredDatasets)
                     {
-                        qDebug() << dataset->getGuiName();
+                        //qDebug() << dataset->getGuiName();
                         auto rawData = mv::data().getDataset < Points>(dataset.getDatasetId());
                         auto dimensionNames= rawData->getDimensionNames();
                         auto children = rawData->getChildren();
-                        for (auto child : children)
+                        for (auto& child : children)
                         {
                             if (child->getGuiName() + "_mainData" == _hierarchyBottomClusterDataset.getCurrentDataset()->getGuiName())
                             {
                                 auto clustersData = mv::data().getDataset<Clusters>(child->getId());
                                 auto clusters = clustersData->getClusters();
-                                if (clusters.size() > 0)
+                                if (!clusters.empty())
                                 {
                                     std::vector<int> clusterIndicesSelected;
-                                    
-                                    std::vector<int> clusterIndicesFull;//fill it with rawData->getNumPoints()
-                                    for (int i = 0; i < rawData->getNumPoints(); i++)
-                                    {
-                                        clusterIndicesFull.push_back(i);
-                                    }
-                                    for (auto cluster : clusters)
+                                    std::vector<int> clusterIndicesFull(rawData->getNumPoints()); //fill it with rawData->getNumPoints()
+                                    std::iota(clusterIndicesFull.begin(), clusterIndicesFull.end(), 0); // Fill the vector with increasing values
+                                    for (auto& cluster : clusters)
                                     {
                                         if (clusterList.contains(cluster.getName()) )
                                         {
                                             auto clusterIndices = cluster.getIndices();
                                             std::copy(clusterIndices.begin(), clusterIndices.end(), std::back_inserter(clusterIndicesSelected));          
                                         }
-
                                     }
-                                    if (clusterIndicesSelected.size()>0)
+                                    if (!clusterIndicesSelected.empty())
                                     {
                                         for (int i = 0; i < dimensionNames.size(); i++)
                                         {
-                                            std::vector<float> resultContainerShort(clusterIndicesSelected.size() * 1);
-                                            std::vector<float> resultContainerFull(clusterIndicesFull.size() * 1);
+                                            std::vector<float> resultContainerShort(clusterIndicesSelected.size());
+                                            std::vector<float> resultContainerFull(clusterIndicesFull.size());
                                             std::vector<int> dimensionIndex = { i };
                                             rawData->populateDataForDimensions(resultContainerShort, dimensionIndex, clusterIndicesSelected);
                                             rawData->populateDataForDimensions(resultContainerFull, dimensionIndex, clusterIndicesFull);
@@ -191,25 +211,23 @@ SettingsAction::SettingsAction(QObject* parent) :
                                             _clusterNameToGeneNameToExpressionValue[dataset->getGuiName()][dimensionNames[i]] = shortMean / fullMean;
                                         }
                                     }
-
                                 }
-                                
-
-
                             }
                         }
-
-
-
-                    }
                     }
                 }
             }
+        }
 
-            printMap(_clusterNameToGeneNameToExpressionValue);
-
-
-        };
+        QStringList  geneList= findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, 10);
+        qDebug() << "\n***************************************************************************************\nGeneList of size:"<< geneList.size()<<"\n Genes";
+        for (const auto& gene : geneList) {
+            qDebug() << gene;
+        }
+        QVariant variant = QVariant::fromValue(geneList);
+        _filteredGeneNamesVariant.setVariant(variant);
+        
+    };
     connect(&_updateButtonForGeneFiltering, &TriggerAction::triggered, this, updateButtonForGeneFilteringUpdate);
 
     const auto speciesNamesDatasetUpdate = [this]() -> void
