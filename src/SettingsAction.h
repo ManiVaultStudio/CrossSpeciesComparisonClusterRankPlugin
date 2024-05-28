@@ -2,7 +2,8 @@
 
 #include <actions/DatasetPickerAction.h>
 #include "PointData/DimensionsPickerAction.h"
-
+#include <PointData/PointData.h>
+#include <ClusterData/ClusterData.h>
 #include "actions/GroupAction.h"
 #include "actions/TriggerAction.h"
 #include "actions/ToggleAction.h"
