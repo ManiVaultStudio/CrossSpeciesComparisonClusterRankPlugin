@@ -54,14 +54,14 @@ public:
 
     /** Store a private reference to the data set that should be displayed */
     void loadData(const mv::Datasets& datasets) override;
-
+    //void createHierarchy(qsizetype index, const Dataset<DatasetImpl>& dataset);
 public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
 
 private:
     /** Published selections received from the JS side to ManiVault's core */
-    void publishSelection(const std::vector<unsigned int>& selectedIDs);
+    void publishSelection(const std::vector<QString>& selectedIDs);
 
     QString getCurrentDataSetID() const;
 

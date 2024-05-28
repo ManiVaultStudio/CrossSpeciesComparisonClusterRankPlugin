@@ -35,9 +35,19 @@ function notifyBridgeAvailable() {
 // The QtBridge is connected to our WebCommunicationObject (ChartCommObject)
 // and we can call all slots defined therein
 function passSelectionToQt(dat) {
+
+    //convert dat to string from array by adding a separator and then pass it to Qt
+    if (dat != "") {
+        dat = dat.join(" @%$,$%@ ");
+    }
+    else {
+        dat = "";
+    }
+
+
     if (isQtAvailable) {
         QtBridge.js_qt_passSelectionToQt(dat);
-	}
+    }
 }
 
 // utility function: pipe errors to log

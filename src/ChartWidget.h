@@ -26,15 +26,15 @@ signals:
 
     // Signals Qt internal
     // Used to inform the plugin about new selection: the plugin class then updates ManiVault's core
-    void passSelectionToCore(const std::vector<unsigned int>& selectionIDs);
+    void passSelectionToCore(const std::vector<QString>& selectionIDs);
 
 public slots:
     // Invoked from JS side 
     // Used to receive selection IDs from the D3 plot, will emit passSelectionToCore
-    void js_qt_passSelectionToQt(const QVariantList& data);
+    void js_qt_passSelectionToQt(const QString& data);
 
 private:
-    std::vector<unsigned int> _selectedIDsFromJS;   // Used for converting incoming selection IDs from the js side
+    std::vector<QString> _selectedIDsFromJS;   // Used for converting incoming selection IDs from the js side
 };
 
 

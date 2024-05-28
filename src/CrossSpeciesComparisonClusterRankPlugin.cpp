@@ -299,25 +299,184 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
 }
 
-void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<unsigned int>& selectedIDs)
+void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
-    // ask core for the selection set for the current data set
-    auto selectionSet = _currentDataSet->getSelection<Points>();
-    auto& selectionIndices = selectionSet->indices;
+    if (!selectedIDs.empty())
+    {
+        //qDebug() << "\nSelectedIDs: ";
+        for (const auto& id : selectedIDs)
+        {
+            //qDebug() << id + " ,";
+        }
+        //qDebug() << "\n";
+    }
+    else
+    {
 
-    // clear the selection and add the new points
-    selectionIndices.clear();
-    selectionIndices.reserve(_currentDataSet->getNumPoints());
-    for (const auto id : selectedIDs) {
-        selectionIndices.push_back(id);
+    }
+    
+
+    //// ask core for the selection set for the current data set
+    //auto selectionSet = _currentDataSet->getSelection<Points>();
+    //auto& selectionIndices = selectionSet->indices;
+
+    //// clear the selection and add the new points
+    //selectionIndices.clear();
+    //selectionIndices.reserve(_currentDataSet->getNumPoints());
+    //for (const auto id : selectedIDs) {
+    //    selectionIndices.push_back(id);
+    //}
+
+    //// notify core about the selection change
+    //if (_currentDataSet->isDerivedData())
+    //    events().notifyDatasetDataSelectionChanged(_currentDataSet->getSourceDataset<DatasetImpl>());
+    //else
+    //    events().notifyDatasetDataSelectionChanged(_currentDataSet);
+}
+/*
+namespace  local
+{
+    void get_recursive_cluster_tree(QStandardItem* item, Dataset<DatasetImpl> currentDataset, const QVector<QString>& hierarchy, qsizetype h, bool firstTime, bool intersection = true, const std::vector<uint32_t>& indices = {})
+    {
+        if (h >= hierarchy.size())
+            return;
+
+        auto childDatasets = currentDataset->getChildren({ ClusterType });
+        for (qsizetype c = 0; c < childDatasets.size(); ++c)
+        {
+            if (childDatasets[c]->getGuiName() == hierarchy[h])
+            {
+                mv::Dataset<Clusters> clusterData = childDatasets[c];
+                auto clusters = clusterData->getClusters();
+
+
+                if (intersection && !firstTime)
+                {
+                    QSet<QString> clusterNames;
+                    for (auto cluster : clusters)
+                    {
+                        QString name = cluster.getName();
+                        clusterNames.insert(name);
+                    }
+                    for (qsizetype row = item->rowCount() - 1; row >= 0; --row)
+                    {
+                        QStandardItem* child = item->child(row, 0);
+                        if (!clusterNames.contains(child->text()))
+                        {
+                            item->removeRow(row);
+                        }
+                    }
+                }
+
+                for (auto cluster : clusters)
+                {
+                    QString name = cluster.getName();
+                    QStandardItem* correspondingItem = nullptr;
+
+                    if (!firstTime)
+                    {
+                        for (qsizetype row = 0; row < item->rowCount(); ++row)
+                        {
+                            QStandardItem* child = item->child(row, 0);
+                            if (child->text() == name)
+                            {
+                                correspondingItem = child;
+                                break;
+                            }
+                        }
+                        if (intersection && (correspondingItem == nullptr))
+                            continue;;
+                    }
+
+
+
+                    {
+                        std::vector<uint32_t> clusterIndices = cluster.getIndices();
+                        std::sort(clusterIndices.begin(), clusterIndices.end());
+                        std::vector<uint32_t> intersectingIndices;
+                        if (h == 0)
+                            intersectingIndices = clusterIndices;
+                        else
+                        {
+                            std::set_intersection(indices.cbegin(), indices.cend(), clusterIndices.cbegin(), clusterIndices.cend(), std::back_inserter(intersectingIndices));
+                        }
+                        if (!intersectingIndices.empty())
+                        {
+                            if (correspondingItem == nullptr)
+                            {
+                                QPixmap pixmap(16, 16);
+                                pixmap.fill(cluster.getColor());
+                                correspondingItem = new QStandardItem(pixmap, name);
+                                correspondingItem->setData(h, Qt::UserRole);
+
+                                item->appendRow(correspondingItem);
+                            }
+                            get_recursive_cluster_tree(correspondingItem, currentDataset, hierarchy, h + 1, firstTime, intersection, intersectingIndices);
+                        }
+
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+
+
+void CrossSpeciesComparisonClusterRankPlugin::createHierarchy(qsizetype index, const Dataset<DatasetImpl>& dataset)
+{
+    
+    const qsizetype NrOfDatasets = _selectedDatasetsAction.size();
+
+
+    QVector<QString> hierarchy = { "class", "subclass","cross_species_cluster" };
+
+    for (qsizetype i = 0; i < _selectedDatasetsAction.size(); ++i)
+    {
+        if (!_selectedDatasetsAction.getDataset(i).isValid())
+            return;
+    }
+    _model.clear();
+    //  _model.invisibleRootItem()->setData("Hierarchy", Qt::DisplayRole);
+
+    QStringList finalLevelItems;
+    for (qsizetype i = 0; i < _selectedDatasetsAction.size(); ++i)
+    {
+
+        Dataset<DatasetImpl> currentDataset = _selectedDatasetsAction.getDataset(i).get();
+
+
+        auto childDatasets = currentDataset->getChildren({ ClusterType });
+        for (qsizetype c = 0; c < childDatasets.size(); ++c)
+        {
+            if (childDatasets[c]->getGuiName() == hierarchy.last())
+            {
+                Dataset<Clusters> clusterData = childDatasets[c];
+                auto clusters = clusterData->getClusters();
+
+                for (auto cluster : clusters)
+                {
+                    QString name = cluster.getName();
+                    finalLevelItems.append(name);
+                }
+            }
+        }
+
+
+        local::get_recursive_cluster_tree(_model.invisibleRootItem(), currentDataset, hierarchy, 0, (i == 0), true);
+
     }
 
-    // notify core about the selection change
-    if (_currentDataSet->isDerivedData())
-        events().notifyDatasetDataSelectionChanged(_currentDataSet->getSourceDataset<DatasetImpl>());
-    else
-        events().notifyDatasetDataSelectionChanged(_currentDataSet);
+
+    _selectedOptionsAction.setOptions(finalLevelItems);
+    if (finalLevelItems.count())
+        _selectedOptionsAction.selectOption(finalLevelItems.first());
+
+   
 }
+ */
+
+
 
 QString CrossSpeciesComparisonClusterRankPlugin::getCurrentDataSetID() const
 {
