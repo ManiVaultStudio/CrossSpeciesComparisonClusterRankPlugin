@@ -1,7 +1,29 @@
 #include "SettingsAction.h"
+#include <vector>
+#include <numeric>
+#include <execution>
+#include <iostream>
+#include <algorithm>
+#include <vector>
 
 
+void printMap(const std::map<QString, std::map<QString, float>>& map) {
+    for (const auto& outerPair : map) {
+        std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        for (const auto& innerPair : outerPair.second) {
+            std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
+        }
+    }
+}
+float calculateMean(const std::vector<float>& v) {
+    if (v.empty())
+        return 0.0f;
 
+    float sum = std::reduce(std::execution::par, v.begin(), v.end());
+    float mean = sum / v.size();
+
+    return mean;
+}
 SettingsAction::SettingsAction(QObject* parent) :
     GroupAction(parent, "SettingsAction", true),
     _mainPointsDataset(this, "Main Points Dataset"),
@@ -88,7 +110,7 @@ SettingsAction::SettingsAction(QObject* parent) :
             auto pointsDataset = _mainPointsDataset.getCurrentDataset();
             auto speciesDataset= _speciesNamesDataset.getCurrentDataset();
             bool isValid = false;
-            
+            _clusterNameToGeneNameToExpressionValue.clear();
             if (clusterDataset.isValid() && pointsDataset.isValid() && speciesDataset.isValid())
             {
                 isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId() && speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
@@ -96,11 +118,95 @@ SettingsAction::SettingsAction(QObject* parent) :
                 if (isValid)
                 {
                     QVariant variant = _selectedClusterNamesVariant.getVariant();
-                    QStringList stringList = variant.toStringList();
-                    qDebug() << stringList.join(", ");
+                    QStringList clusterList = variant.toStringList();
+
+                    QStringList speciesList;
+                    auto speciesData = mv::data().getDataset<Clusters>(speciesDataset->getId());
+                    auto species = speciesData->getClusters();
+                    if (species.size()>0)
+                    {
+                        for (auto specie : species)
+                        {
+                            speciesList.push_back(specie.getName());
+                        }
+                    }
+                    mv::Datasets filteredDatasets;
+                    if (speciesList.size() > 0)
+                    {
+                        
+                        auto allDatasets = mv::data().getAllDatasets({ PointType });
+                        for (const auto& dataset : allDatasets)
+                        {
+                            if (speciesList.contains(dataset->getGuiName()) && dataset->getDataType() == PointType)
+                            {
+                                filteredDatasets.push_back(dataset);
+                            }
+                        }
+                    }
+
+
+                    if (filteredDatasets.size()>0)
+                    {
+                    for (const auto& dataset : filteredDatasets)
+                    {
+                        qDebug() << dataset->getGuiName();
+                        auto rawData = mv::data().getDataset < Points>(dataset.getDatasetId());
+                        auto dimensionNames= rawData->getDimensionNames();
+                        auto children = rawData->getChildren();
+                        for (auto child : children)
+                        {
+                            if (child->getGuiName() + "_mainData" == _hierarchyBottomClusterDataset.getCurrentDataset()->getGuiName())
+                            {
+                                auto clustersData = mv::data().getDataset<Clusters>(child->getId());
+                                auto clusters = clustersData->getClusters();
+                                if (clusters.size() > 0)
+                                {
+                                    std::vector<int> clusterIndicesSelected;
+                                    
+                                    std::vector<int> clusterIndicesFull;//fill it with rawData->getNumPoints()
+                                    for (int i = 0; i < rawData->getNumPoints(); i++)
+                                    {
+                                        clusterIndicesFull.push_back(i);
+                                    }
+                                    for (auto cluster : clusters)
+                                    {
+                                        if (clusterList.contains(cluster.getName()) )
+                                        {
+                                            auto clusterIndices = cluster.getIndices();
+                                            std::copy(clusterIndices.begin(), clusterIndices.end(), std::back_inserter(clusterIndicesSelected));          
+                                        }
+
+                                    }
+                                    if (clusterIndicesSelected.size()>0)
+                                    {
+                                        for (int i = 0; i < dimensionNames.size(); i++)
+                                        {
+                                            std::vector<float> resultContainerShort(clusterIndicesSelected.size() * 1);
+                                            std::vector<float> resultContainerFull(clusterIndicesFull.size() * 1);
+                                            std::vector<int> dimensionIndex = { i };
+                                            rawData->populateDataForDimensions(resultContainerShort, dimensionIndex, clusterIndicesSelected);
+                                            rawData->populateDataForDimensions(resultContainerFull, dimensionIndex, clusterIndicesFull);
+                                            float shortMean = calculateMean(resultContainerShort);
+                                            float fullMean = calculateMean(resultContainerFull);
+                                            _clusterNameToGeneNameToExpressionValue[dataset->getGuiName()][dimensionNames[i]] = shortMean / fullMean;
+                                        }
+                                    }
+
+                                }
+                                
+
+
+                            }
+                        }
+
+
+
+                    }
+                    }
                 }
             }
 
+            printMap(_clusterNameToGeneNameToExpressionValue);
 
 
         };
