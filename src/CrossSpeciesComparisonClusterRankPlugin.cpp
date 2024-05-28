@@ -299,24 +299,31 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
 }
 
-void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<unsigned int>& selectedIDs)
+void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
-    // ask core for the selection set for the current data set
-    auto selectionSet = _currentDataSet->getSelection<Points>();
-    auto& selectionIndices = selectionSet->indices;
-
-    // clear the selection and add the new points
-    selectionIndices.clear();
-    selectionIndices.reserve(_currentDataSet->getNumPoints());
-    for (const auto id : selectedIDs) {
-        selectionIndices.push_back(id);
+    
+    qDebug() << "\nSelectedIDs: ";
+    for (const auto& id : selectedIDs)
+    {
+        qDebug() << id+" ,";
     }
+    qDebug() << "\n";
+    //// ask core for the selection set for the current data set
+    //auto selectionSet = _currentDataSet->getSelection<Points>();
+    //auto& selectionIndices = selectionSet->indices;
 
-    // notify core about the selection change
-    if (_currentDataSet->isDerivedData())
-        events().notifyDatasetDataSelectionChanged(_currentDataSet->getSourceDataset<DatasetImpl>());
-    else
-        events().notifyDatasetDataSelectionChanged(_currentDataSet);
+    //// clear the selection and add the new points
+    //selectionIndices.clear();
+    //selectionIndices.reserve(_currentDataSet->getNumPoints());
+    //for (const auto id : selectedIDs) {
+    //    selectionIndices.push_back(id);
+    //}
+
+    //// notify core about the selection change
+    //if (_currentDataSet->isDerivedData())
+    //    events().notifyDatasetDataSelectionChanged(_currentDataSet->getSourceDataset<DatasetImpl>());
+    //else
+    //    events().notifyDatasetDataSelectionChanged(_currentDataSet);
 }
 
 QString CrossSpeciesComparisonClusterRankPlugin::getCurrentDataSetID() const

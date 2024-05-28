@@ -13,6 +13,7 @@ var rect;
 var margin = { top: 10, right: 10, bottom: 10, left: 10 };
 var width;
 var height;
+var selectedClusterContainer = [];
 function doALoadOfStuff() {
     if (data != "") {
         VisCreate();
@@ -26,14 +27,13 @@ function doALoadOfStuff() {
 
 function drawChart(d) {
 
-    if (d != "")
-    {
+    if (d != "") {
         //log("\nData received: \n" + d)
         var parsedData = JSON.parse(d);
         // If parsedData is an array, take the first element
         data = Array.isArray(parsedData) ? parsedData[0] : parsedData;
         VisCreate();
-        
+
         /*data = {
             name: "flare",
             color: "pink",

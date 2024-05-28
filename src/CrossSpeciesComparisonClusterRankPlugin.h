@@ -61,7 +61,7 @@ public slots:
 
 private:
     /** Published selections received from the JS side to ManiVault's core */
-    void publishSelection(const std::vector<unsigned int>& selectedIDs);
+    void publishSelection(const std::vector<QString>& selectedIDs);
 
     QString getCurrentDataSetID() const;
 

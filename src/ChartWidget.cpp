@@ -16,19 +16,18 @@ ChartCommObject::ChartCommObject() :
 {
 }
 
-void ChartCommObject::js_qt_passSelectionToQt(const QVariantList& data){
+void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
     _selectedIDsFromJS.clear();
 
     if (!data.isEmpty())
     {
-        // Convert data structure
-        // We will get strings in the form "point 2" from this particular library
-        // and need to extract only the seclection ID
-        std::for_each(data.begin(), data.end(), [this](const auto& dat) {
-            _selectedIDsFromJS.push_back(dat.toString().split(" ").takeLast().toInt() - 1);
-            });
+        // data.split(" @%$,$%@ ") and store in _selectedIDsFromJS.push_back
+        QStringList list = data.split(" @%$,$%@ ");
+        for (const auto& item : list) {
+            _selectedIDsFromJS.push_back(item);
+        }
 
-        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: Selected item:" << _selectedIDsFromJS[0]; // in this case we know that it is only one
+        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: ";// Selected items : " << _selectedIDsFromJS[0]; // in this case we know that it is only one
     }    
     
     // Notify ManiVault core and thereby other plugins about new selection
