@@ -37,7 +37,13 @@ function notifyBridgeAvailable() {
 function passSelectionToQt(dat) {
 
     //convert dat to string from array by adding a separator and then pass it to Qt
-    dat = dat.join(" @%$,$%@ ");
+    if (dat != "") {
+        dat = dat.join(" @%$,$%@ ");
+    }
+    else {
+        dat = "";
+    }
+
 
     if (isQtAvailable) {
         QtBridge.js_qt_passSelectionToQt(dat);

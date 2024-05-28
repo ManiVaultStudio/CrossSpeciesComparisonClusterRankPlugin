@@ -301,13 +301,21 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
-    
-    qDebug() << "\nSelectedIDs: ";
-    for (const auto& id : selectedIDs)
+    if (!selectedIDs.empty())
     {
-        qDebug() << id+" ,";
+        qDebug() << "\nSelectedIDs: ";
+        for (const auto& id : selectedIDs)
+        {
+            qDebug() << id + " ,";
+        }
+        qDebug() << "\n";
     }
-    qDebug() << "\n";
+    else
+    {
+
+    }
+    
+
     //// ask core for the selection set for the current data set
     //auto selectionSet = _currentDataSet->getSelection<Points>();
     //auto& selectionIndices = selectionSet->indices;

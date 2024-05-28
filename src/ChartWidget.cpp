@@ -19,7 +19,7 @@ ChartCommObject::ChartCommObject() :
 void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
     _selectedIDsFromJS.clear();
 
-    if (!data.isEmpty())
+    if (data!="")
     {
         // data.split(" @%$,$%@ ") and store in _selectedIDsFromJS.push_back
         QStringList list = data.split(" @%$,$%@ ");
@@ -27,9 +27,12 @@ void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
             _selectedIDsFromJS.push_back(item);
         }
 
-        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: ";// Selected items : " << _selectedIDsFromJS[0]; // in this case we know that it is only one
+        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: Not empty";// Selected items : " << _selectedIDsFromJS[0]; // in this case we know that it is only one
     }    
-    
+    else
+    {
+        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: Empty";
+    }
     // Notify ManiVault core and thereby other plugins about new selection
     emit passSelectionToCore(_selectedIDsFromJS);
 }
