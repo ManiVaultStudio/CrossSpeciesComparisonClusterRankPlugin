@@ -303,12 +303,12 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 {
     if (!selectedIDs.empty())
     {
-        qDebug() << "\nSelectedIDs: ";
+        //qDebug() << "\nSelectedIDs: ";
         for (const auto& id : selectedIDs)
         {
-            qDebug() << id + " ,";
+            //qDebug() << id + " ,";
         }
-        qDebug() << "\n";
+        //qDebug() << "\n";
     }
     else
     {
