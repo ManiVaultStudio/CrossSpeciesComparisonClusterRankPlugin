@@ -53,6 +53,7 @@ public: // Action getters
     VariantAction& getSelectedClusterNames() { return _selectedClusterNamesVariant; }
     VariantAction& getFilteredGeneNames() { return _filteredGeneNamesVariant; }
     TriggerAction& getUpdateButtonForGeneFiltering() { return _updateButtonForGeneFiltering; }
+    DatasetPickerAction& getSpeciesNamesDataset() { return _speciesNamesDataset; }
 
 
     
@@ -80,5 +81,6 @@ public:
     VariantAction           _selectedClusterNamesVariant;
     VariantAction           _filteredGeneNamesVariant;
     TriggerAction          _updateButtonForGeneFiltering;
+    DatasetPickerAction    _speciesNamesDataset;
 
 };

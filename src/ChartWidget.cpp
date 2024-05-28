@@ -29,7 +29,7 @@ void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
             _selectedIDsFromJS.push_back(item);
         }
 
-        qDebug() << "ChartCommObject::js_qt_passSelectionToQt: Not empty";// Selected items : " << _selectedIDsFromJS[0]; // in this case we know that it is only one
+        //qDebug() << "ChartCommObject::js_qt_passSelectionToQt: Not empty";// Selected items : " << _selectedIDsFromJS[0]; // in this case we know that it is only one
     }    
     else
     {

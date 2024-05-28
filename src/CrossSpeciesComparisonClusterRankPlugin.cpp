@@ -157,7 +157,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     //if (!_currentDataSet.isValid())
        // return;
 
-    qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
+    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
     _dropWidget->setShowDropIndicator(false);
     _currentDataSet;
     QVariantList dataForChart = {
@@ -320,39 +320,60 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 {
     auto clusterDataset= _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
     auto pointsDataset= _settingsAction.getMainPointsDataset().getCurrentDataset();
-    bool isValid = false;
-    isValid= clusterDataset->getParent().getDatasetId() == pointsDataset->getId();
+    //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
 
-    if (clusterDataset.isValid() && pointsDataset.isValid() && isValid)
+
+    if (clusterDataset.isValid() && pointsDataset.isValid())
     {
-        std::vector<std::uint32_t> selectedIndices;
-        if (!selectedIDs.empty())
-        {
+        bool isValid = false;
+        isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId();//&& speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
 
-            auto rawData = mv::data().getDataset < Clusters>(clusterDataset.getDatasetId());
-            auto clusters= rawData->getClusters();
-            if (clusters.size() > 0)
-            {
-                for (auto cluster : clusters)
-                {
-                    auto clusterName = cluster.getName();
-                    //if selectedIDs contains cluster.getName()
-                    if (std::find(selectedIDs.begin(), selectedIDs.end(), clusterName) != selectedIDs.end())
-                    {
-                        auto clusterIndices = cluster.getIndices();
-                        selectedIndices.insert(selectedIndices.end(), clusterIndices.begin(), clusterIndices.end());
-                    }
-  
-                   
 
-                    
-                }
-            }
-
+        QList<QString> list;
+        for (const auto& id : selectedIDs) {
+            list.append(id);
         }
+
+        QVariant variant = QVariant::fromValue(list);
+        _settingsAction.getSelectedClusterNames().setVariant(variant);
+
+        if (isValid)
+        {
+            std::vector<std::uint32_t> selectedIndices;
+            if (!selectedIDs.empty())
+            {
+
+                auto rawData = mv::data().getDataset < Clusters>(clusterDataset.getDatasetId());
+                auto clusters = rawData->getClusters();
+                if (clusters.size() > 0)
+                {
+                    for (auto cluster : clusters)
+                    {
+                        auto clusterName = cluster.getName();
+                        //if selectedIDs contains cluster.getName()
+                        if (std::find(selectedIDs.begin(), selectedIDs.end(), clusterName) != selectedIDs.end())
+                        {
+                            auto clusterIndices = cluster.getIndices();
+                            selectedIndices.insert(selectedIndices.end(), clusterIndices.begin(), clusterIndices.end());
+                        }
+
+
+
+
+                    }
+                }
+
+            }
             pointsDataset->setSelectionIndices(selectedIndices);
             mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+        }
+        else
+        {
+            qDebug() << "Datasets not valid";
+        }
+
     }
+
     else
     {
         qDebug() << "Datasets not valid";
