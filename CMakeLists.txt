@@ -45,6 +45,8 @@ set(PLUGIN_SOURCES
     src/CrossSpeciesComparisonClusterRankPlugin.cpp
     src/ChartWidget.h
     src/ChartWidget.cpp
+	src/SettingsAction.h
+    src/SettingsAction.cpp
     src/CrossSpeciesComparisonClusterRankPlugin.json
 )
 

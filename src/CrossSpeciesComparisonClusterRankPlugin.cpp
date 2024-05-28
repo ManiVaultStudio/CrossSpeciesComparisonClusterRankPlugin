@@ -23,7 +23,9 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
     ViewPlugin(factory),
     _chartWidget(nullptr),
     _dropWidget(nullptr),
-    _currentDataSet(nullptr)
+    _currentDataSet(nullptr),
+    _settingsAction(),
+    _toolbarAction(this, "Toolbar")
 {
 }
 
@@ -31,6 +33,10 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 {
     getWidget().setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
+    
+    _toolbarAction.addAction(&_settingsAction, 4, GroupAction::Horizontal);
+    
+    
     // Create layout
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -40,10 +46,18 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
     // Add widget to layout
-    layout->addWidget(_chartWidget);
+    layout->addWidget(_toolbarAction.createWidget(&getWidget()));
+    layout->addWidget(_chartWidget,1);
 
     // Apply the layout
     getWidget().setLayout(layout);
+
+
+
+    
+
+
+
 
     // Instantiate new drop widget: See CrossSpeciesComparisonClusterRank for details
     _dropWidget = new DropWidget(_chartWidget);
@@ -102,6 +116,9 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
+
+
+
 }
 
 void CrossSpeciesComparisonClusterRankPlugin::loadData(const mv::Datasets& datasets)
@@ -485,7 +502,24 @@ QString CrossSpeciesComparisonClusterRankPlugin::getCurrentDataSetID() const
     else
         return QString{};
 }
+void CrossSpeciesComparisonClusterRankPlugin::fromVariantMap(const QVariantMap& variantMap)
+{
+    ViewPlugin::fromVariantMap(variantMap);
 
+    mv::util::variantMapMustContain(variantMap, "CSEC:Cross-Species Comparison Cluster Rank Settings");
+    _settingsAction.fromVariantMap(variantMap["CSEC:Cross-Species Comparison Cluster Rank Settings"].toMap());
+
+
+}
+
+QVariantMap CrossSpeciesComparisonClusterRankPlugin::toVariantMap() const
+{
+    QVariantMap variantMap = ViewPlugin::toVariantMap();
+
+    _settingsAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}
 
 // =============================================================================
 // Plugin Factory 

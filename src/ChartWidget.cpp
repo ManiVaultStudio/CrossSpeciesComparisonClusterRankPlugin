@@ -19,6 +19,8 @@ ChartCommObject::ChartCommObject() :
 void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
     _selectedIDsFromJS.clear();
 
+   
+
     if (data!="")
     {
         // data.split(" @%$,$%@ ") and store in _selectedIDsFromJS.push_back

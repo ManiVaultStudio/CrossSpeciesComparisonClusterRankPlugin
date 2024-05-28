@@ -1,0 +1,87 @@
+#include "SettingsAction.h"
+
+
+
+SettingsAction::SettingsAction(QObject* parent) :
+    GroupAction(parent, "SettingsAction", true),
+    _mainPointsDataset(this, "Main Points Dataset"),
+    _hierarchyTopClusterDataset(this, "Hierarchy Top Cluster Dataset"),
+    _hierarchyMiddleClusterDataset(this, "Hierarchy Middle Cluster Dataset"),
+    _hierarchyBottomClusterDataset(this, "Hierarchy Bottom Cluster Dataset"),
+    _selectedClusterNamesVariant(this, "Selected Cluster Names Variant"),
+    _filteredGeneNamesVariant(this, "Filtered Gene Names Variant"),
+    _updateButtonForGeneFiltering(this, "Filter Genes Trigger")
+{
+    setText("Cross-Species Comparison Cluster Rank Settings");
+    _mainPointsDataset.setToolTip("Main Points Dataset");
+    _hierarchyTopClusterDataset.setToolTip("Hierarchy Top Cluster Dataset");
+    _hierarchyMiddleClusterDataset.setToolTip("Hierarchy Middle Cluster Dataset");
+    _hierarchyBottomClusterDataset.setToolTip("Hierarchy Bottom Cluster Dataset");
+    _selectedClusterNamesVariant.setToolTip("Selected Cluster Names Variant");
+    _filteredGeneNamesVariant.setToolTip("Filtered Gene Names Variant");
+    _updateButtonForGeneFiltering.setToolTip("Filter Genes Trigger");
+
+
+
+
+    _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _hierarchyBottomClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _selectedClusterNamesVariant.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _filteredGeneNamesVariant.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _updateButtonForGeneFiltering.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
+
+    setSerializationName("CSEC:Cross-Species Comparison Cluster Rank Settings");
+
+    _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
+    _hierarchyTopClusterDataset.setSerializationName("CSCCR:HierarchyTopClusterDataset");
+    _hierarchyMiddleClusterDataset.setSerializationName("CSCCR:HierarchyMiddleClusterDataset");
+    _hierarchyBottomClusterDataset.setSerializationName("CSCCR:HierarchyBottomClusterDataset");
+    _selectedClusterNamesVariant.setSerializationName("CSCCR:SelectedClusterNamesVariant");
+    _filteredGeneNamesVariant.setSerializationName("CSCCR:FilteredGeneNamesVariant");
+    //_updateButtonForGeneFiltering.setSerializationName("CSCCR:UpdateButtonForGeneFiltering");
+
+    addAction(&_mainPointsDataset);
+    addAction(&_hierarchyTopClusterDataset);
+    addAction(&_hierarchyMiddleClusterDataset);
+    addAction(&_hierarchyBottomClusterDataset);
+    addAction(&_selectedClusterNamesVariant);
+    addAction(&_filteredGeneNamesVariant);
+    addAction(&_updateButtonForGeneFiltering);
+
+
+
+}
+
+void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+
+    _mainPointsDataset.fromParentVariantMap(variantMap);
+    _hierarchyTopClusterDataset.fromParentVariantMap(variantMap);
+    _hierarchyMiddleClusterDataset.fromParentVariantMap(variantMap);
+    _hierarchyBottomClusterDataset.fromParentVariantMap(variantMap);
+    _selectedClusterNamesVariant.fromParentVariantMap(variantMap);
+    _filteredGeneNamesVariant.fromParentVariantMap(variantMap);
+    //_updateButtonForGeneFiltering.fromParentVariantMap(variantMap);
+
+}
+
+QVariantMap SettingsAction::toVariantMap() const
+{
+    QVariantMap variantMap = GroupAction::toVariantMap();
+
+
+    _mainPointsDataset.insertIntoVariantMap(variantMap);
+    _hierarchyTopClusterDataset.insertIntoVariantMap(variantMap);
+    _hierarchyMiddleClusterDataset.insertIntoVariantMap(variantMap);
+    _hierarchyBottomClusterDataset.insertIntoVariantMap(variantMap);
+    _selectedClusterNamesVariant.insertIntoVariantMap(variantMap);
+    _filteredGeneNamesVariant.insertIntoVariantMap(variantMap);
+    //_updateButtonForGeneFiltering.insertIntoVariantMap(variantMap);
+
+
+    return variantMap;
+}
