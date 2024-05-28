@@ -310,7 +310,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
     if (jsonString!="")
     {
-        qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
+       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
         emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
     }
     
