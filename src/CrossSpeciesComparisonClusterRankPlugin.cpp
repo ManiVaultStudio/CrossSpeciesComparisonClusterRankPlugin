@@ -24,8 +24,7 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
     _chartWidget(nullptr),
     _dropWidget(nullptr),
     _currentDataSet(nullptr),
-    _settingsAction(),
-    _toolbarAction(this, "Toolbar")
+    _settingsAction(*this)
 {
 }
 
@@ -33,9 +32,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 {
     getWidget().setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-    
-    _toolbarAction.addAction(&_settingsAction, 4, GroupAction::Horizontal);
-    
+     
     
     // Create layout
     auto layout = new QVBoxLayout();
@@ -46,7 +43,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
     // Add widget to layout
-    layout->addWidget(_toolbarAction.createWidget(&getWidget()));
+    layout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
+    layout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
     layout->addWidget(_chartWidget,1);
 
     // Apply the layout
@@ -555,8 +553,8 @@ void CrossSpeciesComparisonClusterRankPlugin::fromVariantMap(const QVariantMap& 
 {
     ViewPlugin::fromVariantMap(variantMap);
 
-    mv::util::variantMapMustContain(variantMap, "CSEC:Cross-Species Comparison Cluster Rank Settings");
-    _settingsAction.fromVariantMap(variantMap["CSEC:Cross-Species Comparison Cluster Rank Settings"].toMap());
+    mv::util::variantMapMustContain(variantMap, "CSCCR:Cross-Species Comparison Cluster Rank Settings");
+    _settingsAction.fromVariantMap(variantMap["CSCCR:Cross-Species Comparison Cluster Rank Settings"].toMap());
 
 
 }

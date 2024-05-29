@@ -66,6 +66,7 @@ private:
     void publishSelection(const std::vector<QString>& selectedIDs);
 
     QString getCurrentDataSetID() const;
+    SettingsAction& getSettingsAction() { return _settingsAction; }
 public: // Serialization
 
     /**
@@ -79,12 +80,11 @@ public: // Serialization
      * @return Variant map representation of the plugin
      */
     Q_INVOKABLE QVariantMap toVariantMap() const override;
-private:
+protected:
     ChartWidget*            _chartWidget;       // WebWidget that sets up the HTML page
     SettingsAction      _settingsAction;    // Settings action for the plugin
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
-    HorizontalToolbarAction     _toolbarAction;
 };
 
 /**
