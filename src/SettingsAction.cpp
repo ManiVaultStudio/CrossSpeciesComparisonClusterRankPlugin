@@ -6,12 +6,79 @@
 #include <algorithm>
 #include <vector>
 
-QStringList  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n) {
+void printMap(const std::map<QString, std::map<QString, float>>& map) {
+    for (const auto& outerPair : map) {
+        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        for (const auto& innerPair : outerPair.second) {
+            //std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
+        }
+    }
+}
+float calculateMean(const std::vector<float>& v) {
+    if (v.empty())
+        return 0.0f;
+
+    float sum = std::reduce(std::execution::par, v.begin(), v.end());
+    float mean = sum / v.size();
+
+    return mean;
+}
+QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map) {
+    QStandardItemModel* model;
+    model->setHorizontalHeaderItem(0, new QStandardItem("Gene"));
+    model->setHorizontalHeaderItem(1, new QStandardItem("Variance"));
+
+    int numOfSpecies = map.size();
+    std::map<QString, std::map<QString, float>>::const_iterator it = map.begin();
+    for (int i = 0 + 2; i < numOfSpecies + 2; i++, it++) {
+        model->setHorizontalHeaderItem(i, new QStandardItem(QString("Mean_") + it->first));
+    }
+
+    for (const auto& gene : returnGeneList) {
+        QList<QStandardItem*> rowItems;
+        rowItems.append(new QStandardItem(gene));
+
+        // Gather all expression values for this gene
+        std::vector<float> expressionValues;
+        for (const auto& species : map.at(gene)) {
+            expressionValues.push_back(species.second);
+        }
+
+        // Calculate mean
+        float mean = calculateMean(expressionValues);
+
+        // Calculate variance
+        float variance = 0.0f;
+        for (const auto& value : expressionValues) {
+            variance += std::pow(value - mean, 2);
+        }
+        variance /= expressionValues.size();
+
+        rowItems.append(new QStandardItem(QString::number(variance)));
+
+        // Add mean values for each species
+        for (const auto& species : map.at(gene)) {
+            rowItems.append(new QStandardItem(QString::number(species.second)));
+        }
+
+        model->appendRow(rowItems);
+    }
+
+    qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
+    QVariant variant = QVariant::fromValue(model);
+
+    return variant;
+
+
+
+}
+
+QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n) {
     QSet<QString> geneList;
     QStringList returnGeneList;
     
     for (const auto& outerPair : map) {
-        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        //std::cout << "Species Name: " << outerPair.first.toStdString() << std::endl;
 
         // Convert map to vector of pairs
         std::vector<std::pair<QString, float>> geneExpressionVec(outerPair.second.begin(), outerPair.second.end());
@@ -31,28 +98,17 @@ QStringList  findTopNGenesPerCluster(const std::map<QString, std::map<QString, f
     for (const auto& gene : geneList) {
         returnGeneList.push_back(gene);
     }
-    return returnGeneList;
+    return createModelFromData(returnGeneList,map);
 }
 
-void printMap(const std::map<QString, std::map<QString, float>>& map) {
-    for (const auto& outerPair : map) {
-        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
-        for (const auto& innerPair : outerPair.second) {
-            //std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
-        }
-    }
-}
-float calculateMean(const std::vector<float>& v) {
-    if (v.empty())
-        return 0.0f;
 
-    float sum = std::reduce(std::execution::par, v.begin(), v.end());
-    float mean = sum / v.size();
 
-    return mean;
-}
+
+
+
+
 SettingsAction::SettingsAction(QObject* parent) :
-    GroupAction(parent, "SettingsAction", true),
+    GroupAction(parent, "SettingsAction"),
     _mainPointsDataset(this, "Main Points Dataset"),
     _hierarchyTopClusterDataset(this, "Hierarchy Top Cluster Dataset"),
     _hierarchyMiddleClusterDataset(this, "Hierarchy Middle Cluster Dataset"),
@@ -221,13 +277,10 @@ SettingsAction::SettingsAction(QObject* parent) :
             }
         }
 
-        QStringList  geneList= findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue());
-        qDebug() << "\n***************************************************************************************\nGeneList of size:"<< geneList.size()<<"\n Genes";
-        for (const auto& gene : geneList) {
-            qDebug() << gene;
-        }
-        QVariant variant = QVariant::fromValue(geneList);
-        _filteredGeneNamesVariant.setVariant(variant);
+        QVariant  geneListTable= findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue());
+
+        
+        _filteredGeneNamesVariant.setVariant(geneListTable);
         
     };
     connect(&_updateButtonForGeneFiltering, &TriggerAction::triggered, this, updateButtonForGeneFilteringUpdate);
