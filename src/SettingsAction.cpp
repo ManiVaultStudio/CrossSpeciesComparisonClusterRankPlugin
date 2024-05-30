@@ -99,46 +99,42 @@ std::string mergeToNewick(int* merge, int numOfLeaves) {
 
     return stack.top() + ";";
 }
-double* condensedDistanceMatrix(std::vector<std::vector<float>>& items, std::string distanceType) {
+double* condensedDistanceMatrix(std::vector<float>& items) {
     int n = items.size();
-    int f = items[0].size();
     double* distmat = new double[(n * (n - 1)) / 2];
     int k = 0;
 
-    auto buildIndex = [&](auto& index) {
-        for (int i = 0; i < n; i++) {
-            index.add_item(i, items[i].data());
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            distmat[k] = std::abs(items[i] - items[j]);
+            ++k;
         }
-        index.build(-1); // Use automatic build parameter
-        };
-
-    auto computeDistances = [&](auto& index) {
-        for (int j = n - 1; j >= 0; --j) {
-            for (int i = j - 1; i >= 0; --i) {
-                distmat[k] = index.get_distance(i, j);
-                k++;
-            }
-        }
-        };
-
-
-    if (distanceType == "Manhattan") {
-        Annoy::AnnoyIndex<int32_t, float, Annoy::Manhattan, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
-        buildIndex(index);
-        computeDistances(index);
     }
-    else if (distanceType == "Angular") {
-        Annoy::AnnoyIndex<int32_t, float, Annoy::Angular, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
-        buildIndex(index);
-        computeDistances(index);
-    }
-    else {
-        Annoy::AnnoyIndex<int32_t, float, Annoy::Euclidean, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
-        buildIndex(index);
-        computeDistances(index);
-    }
-
     return distmat;
+   
+    //    int n = items.size();
+    //double* distmat = new double[(n * (n - 1)) / 2];
+    //int k = 0;
+
+    //// Build Annoy index
+    //Annoy::AnnoyIndex<int32_t, float, Annoy::Euclidean, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
+    ////Annoy::AnnoyIndex<int32_t, float, Annoy::Manhattan, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
+    ////Annoy::AnnoyIndex<int32_t, float, Annoy::Angular, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
+    //for (int i = 0; i < n; ++i) {
+    //    index.add_item(i, &items[i]);
+    //}
+    //index.build(10);  // 10 is the number of trees for the index. More trees gives higher precision.
+
+    //// Calculate distances
+    //for (int i = 0; i < n; ++i) {
+    //    for (int j = i + 1; j < n; ++j) {
+    //        distmat[k] = index.get_distance(i, j);
+    //        ++k;
+    //    }
+    //}
+
+    //return distmat;
+ 
 }
 
 QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames) {
@@ -191,11 +187,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         double* distmat = new double[(numOfLeaves * (numOfLeaves - 1)) / 2];
 
         
-       
-        std::string distanceType = "Euclidean";//"Euclidean","Angular", "Manhattan" 
-        std::vector<std::vector<float>> clusteringItems;
-        clusteringItems.push_back(numbers);
-        distmat = condensedDistanceMatrix(clusteringItems, distanceType);
+        distmat = condensedDistanceMatrix(numbers);
 
         int* merge = new int[2 * (numOfLeaves - 1)];
         double* height = new double[numOfLeaves - 1];
@@ -280,6 +272,57 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
 
         model->appendRow(row);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //std::map<QString, std::vector<QString>> clusteringMap;
+
+//// see which keys have the same newick tree in the map and group them in the clustering map Group 1: {gene1, gene2, gene3} etc
+//for (auto it = newickTrees.begin(); it != newickTrees.end(); ++it) {
+//    QString gene = it->first;
+//    QString newick = it->second;
+//    if (clusteringMap.empty()) {
+//        clusteringMap.insert(std::make_pair(newick, std::vector<QString>{gene}));
+//    }
+//    else {
+//        bool found = false;
+//        for (auto& cluster : clusteringMap) {
+//            if (cluster.first == newick) {
+//                cluster.second.push_back(gene);
+//                found = true;
+//                break;
+//            }
+//        }
+//        if (!found) {
+//            clusteringMap.insert(std::make_pair(newick, std::vector<QString>{gene}));
+//        }
+//    }
+//}
+
+////add a column to the model with the group numbers if present else keep them blank
+//int groupNumber = 1;
+//for (auto& cluster : clusteringMap) {
+//    for (auto& gene : cluster.second) {
+//        for (int i = 0; i < model->rowCount(); i++) {
+//            if (model->item(i, 0)->text() == gene) {
+//                model->setItem(i, model->columnCount(), new QStandardItem(QString::number(groupNumber)));
+//            }
+//        }
+//    }
+//    groupNumber++;
+//}
+
 
     qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
     QVariant variant = QVariant::fromValue(model);
