@@ -304,7 +304,7 @@ model->appendRow(row);
         }
     }
     //add the genes ABLIM3, ADCK2, ADCY10 in the vector std::vector<QString> to the first key of clusteringMap for testing
-    //clusteringMap[clusteringMap.begin()->first] = { "ABLIM3", "ADCK2", "ADCY10" };
+    //clusteringMap[clusteringMap.begin()->first] = { "VSTM5", "REC8", "ADCY10" }; //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
     //print clusteringMap    '
     for (auto& cluster : clusteringMap) {
         QString newick = cluster.first;
@@ -336,16 +336,15 @@ model->appendRow(row);
             for (auto& gene : genes) {
                 for (int i = 0; i < model->rowCount(); i++) {
                     if (model->item(i, 0)->text() == gene) {
-                        model->item(i, 0)->setBackground(QBrush(QColor(colorCodes[colorIndex])));
+                        for (int j = 0; j < model->columnCount(); j++) {
+                            model->item(i, j)->setBackground(QBrush(QColor(colorCodes[colorIndex])));
+                        }
                     }
                 }
             }
-            colorIndex++;
+            colorIndex = (colorIndex + 1) % colorCodes.size();
         }
     }
-
-
-
     return QVariant::fromValue(model);
 
 
