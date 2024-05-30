@@ -279,9 +279,6 @@ model->appendRow(row);
     //check which newick trees are the same and group them together
     std::map<QString, std::vector<QString>> clusteringMap;
 
-
-
-
     for (auto it = newickTrees.begin(); it != newickTrees.end(); ++it) {
         QString currentNewick = it->second;
         QString currentGene = it->first;
@@ -303,11 +300,8 @@ model->appendRow(row);
             }
         }
     }
-    //add the genes ABLIM3, ADCK2, ADCY10 in the vector std::vector<QString> to the first key of clusteringMap for testing
-    // //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
-    // 
-    // 
-    // 
+    //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
+
     
     //testing
     //clusteringMap[clusteringMap.begin()->first] = { "VSTM5", "REC8", "TPGS2" }; 
@@ -331,10 +325,6 @@ model->appendRow(row);
     }
     */
 
-
-
-
-    //color the rows of the genes that have the same newick tree using color codes  #8dd3c7#ffffb3#bebada#fb8072#80b1d3#fdb462#b3de69#fccde5#d9d9d9#bc80bd#ccebc5#ffed6f and    #a6cee3#1f78b4#b2df8a#33a02c#fb9a99#e31a1c#fdbf6f#ff7f00#cab2d6#6a3d9a#ffff99#b15928
     QStringList colorCodes = { "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f", "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" };
     int colorIndex = 0;
     for (auto& cluster : clusteringMap) {
@@ -356,10 +346,6 @@ model->appendRow(row);
     }
     return QVariant::fromValue(model);
 
-
-    //qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
-    //QVariant variant = QVariant::fromValue(model);
-    //return variant;
 }
 
 QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames) {
