@@ -304,7 +304,16 @@ model->appendRow(row);
         }
     }
     //add the genes ABLIM3, ADCK2, ADCY10 in the vector std::vector<QString> to the first key of clusteringMap for testing
-    //clusteringMap[clusteringMap.begin()->first] = { "VSTM5", "REC8", "ADCY10" }; //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
+    // //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
+    // 
+    // 
+    // 
+    
+    //testing
+    //clusteringMap[clusteringMap.begin()->first] = { "VSTM5", "REC8", "TPGS2" }; 
+    //clusteringMap[(++clusteringMap.begin())->first] = { "FGD6", "ANGEL1","FANCC" };
+    
+    
     //print clusteringMap    '
     for (auto& cluster : clusteringMap) {
         QString newick = cluster.first;
