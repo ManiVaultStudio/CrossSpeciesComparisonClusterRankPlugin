@@ -234,7 +234,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
                             break;
                         }
                     }
-                    
+
 
                     std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
                     jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
@@ -253,80 +253,105 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         QString completedString = QJsonDocument(valueStringReference).toJson(QJsonDocument::Compact);
 
         */
-        delete[] distmat;
-        delete[] merge;
-        delete[] height;
+delete[] distmat;
+delete[] merge;
+delete[] height;
 
-        Statistics stats = calculateStatistics(numbers);
+Statistics stats = calculateStatistics(numbers);
 
-        row.push_back(new QStandardItem(gene));
-        row.push_back(new QStandardItem(QString::number(stats.variance)));
-        row.push_back(new QStandardItem(QString::number(stats.stdDeviation)));
-        row.push_back(new QStandardItem(QString::number(stats.mean)));
-        for (auto numb : numbers)
-        {
-            row.push_back(new QStandardItem(QString::number(numb)));
+row.push_back(new QStandardItem(gene));
+row.push_back(new QStandardItem(QString::number(stats.variance)));
+row.push_back(new QStandardItem(QString::number(stats.stdDeviation)));
+row.push_back(new QStandardItem(QString::number(stats.mean)));
+for (auto numb : numbers)
+{
+    row.push_back(new QStandardItem(QString::number(numb)));
+}
+
+
+
+model->appendRow(row);
+    }
+
+
+
+
+    //check which newick trees are the same and group them together
+    std::map<QString, std::vector<QString>> clusteringMap;
+
+
+
+
+    for (auto it = newickTrees.begin(); it != newickTrees.end(); ++it) {
+        QString currentNewick = it->second;
+        QString currentGene = it->first;
+        if (clusteringMap.empty()) {
+            clusteringMap[currentNewick] = { currentGene };
+        }
+        else {
+            bool found = false;
+            for (auto& cluster : clusteringMap) {
+                QString clusterNewick = cluster.first;
+                if (currentNewick == clusterNewick) {
+                    cluster.second.push_back(currentGene);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                clusteringMap[currentNewick] = { currentGene };
+            }
+        }
+    }
+    //add the genes ABLIM3, ADCK2, ADCY10 in the vector std::vector<QString> to the first key of clusteringMap for testing
+    //clusteringMap[clusteringMap.begin()->first] = { "ABLIM3", "ADCK2", "ADCY10" };
+    //print clusteringMap    '
+    for (auto& cluster : clusteringMap) {
+        QString newick = cluster.first;
+        std::vector<QString> genes = cluster.second;
+
+        if (genes.size() > 1) {
+            std::cout << "Newick: " << newick.toStdString() << std::endl;
+            std::cout << "Genes: ";
+            for (auto& gene : genes) {
+                std::cout << gene.toStdString() << ", ";
+            }
+            std::cout << std::endl;
         }
 
-
-
-        model->appendRow(row);
     }
 
 
 
 
 
+    //color the rows of the genes that have the same newick tree using color codes  #8dd3c7#ffffb3#bebada#fb8072#80b1d3#fdb462#b3de69#fccde5#d9d9d9#bc80bd#ccebc5#ffed6f and    #a6cee3#1f78b4#b2df8a#33a02c#fb9a99#e31a1c#fdbf6f#ff7f00#cab2d6#6a3d9a#ffff99#b15928
+    QStringList colorCodes = { "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f", "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" };
+    int colorIndex = 0;
+    for (auto& cluster : clusteringMap) {
+        QString newick = cluster.first;
+        std::vector<QString> genes = cluster.second;
+
+        if (genes.size() > 1) {
+            for (auto& gene : genes) {
+                for (int i = 0; i < model->rowCount(); i++) {
+                    if (model->item(i, 0)->text() == gene) {
+                        model->item(i, 0)->setBackground(QBrush(QColor(colorCodes[colorIndex])));
+                    }
+                }
+            }
+            colorIndex++;
+        }
+    }
 
 
 
+    return QVariant::fromValue(model);
 
 
-
-
-
-
-    //std::map<QString, std::vector<QString>> clusteringMap;
-
-//// see which keys have the same newick tree in the map and group them in the clustering map Group 1: {gene1, gene2, gene3} etc
-//for (auto it = newickTrees.begin(); it != newickTrees.end(); ++it) {
-//    QString gene = it->first;
-//    QString newick = it->second;
-//    if (clusteringMap.empty()) {
-//        clusteringMap.insert(std::make_pair(newick, std::vector<QString>{gene}));
-//    }
-//    else {
-//        bool found = false;
-//        for (auto& cluster : clusteringMap) {
-//            if (cluster.first == newick) {
-//                cluster.second.push_back(gene);
-//                found = true;
-//                break;
-//            }
-//        }
-//        if (!found) {
-//            clusteringMap.insert(std::make_pair(newick, std::vector<QString>{gene}));
-//        }
-//    }
-//}
-
-////add a column to the model with the group numbers if present else keep them blank
-//int groupNumber = 1;
-//for (auto& cluster : clusteringMap) {
-//    for (auto& gene : cluster.second) {
-//        for (int i = 0; i < model->rowCount(); i++) {
-//            if (model->item(i, 0)->text() == gene) {
-//                model->setItem(i, model->columnCount(), new QStandardItem(QString::number(groupNumber)));
-//            }
-//        }
-//    }
-//    groupNumber++;
-//}
-
-
-    qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
-    QVariant variant = QVariant::fromValue(model);
-    return variant;
+    //qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
+    //QVariant variant = QVariant::fromValue(model);
+    //return variant;
 }
 
 QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames) {
