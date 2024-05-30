@@ -6,8 +6,14 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-
-
+#include <CrossSpeciesComparisonTreeData.h>
+#include "lib/Distance/annoylib.h"
+#include "lib/Distance/kissrandom.h"
+#include <QtConcurrent>
+#include "lib/JSONnlohmann/json.hpp"
+#include "lib/Clustering/fastcluster.h"
+#include <stack>
+#include <sstream>
 float calculateVariance(const std::vector<float>& numbers) {
     float sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
     float mean = sum / numbers.size();
@@ -22,9 +28,9 @@ float calculateVariance(const std::vector<float>& numbers) {
 
 void printMap(const std::map<QString, std::map<QString, float>>& map) {
     for (const auto& outerPair : map) {
-        std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
         for (const auto& innerPair : outerPair.second) {
-            std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
+            //std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
         }
     }
 }
@@ -57,7 +63,85 @@ Statistics calculateStatistics(const std::vector<float>& numbers) {
     return { mean, variance, stdDeviation };
 }
 
-QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map) {
+std::string mergeToNewick(int* merge, int numOfLeaves) {
+    std::vector<std::string> labels(numOfLeaves);
+    for (int i = 0; i < numOfLeaves; ++i) {
+        labels[i] = std::to_string(i + 1);
+    }
+
+    std::stack<std::string> stack;
+
+    for (int i = 0; i < 2 * (numOfLeaves - 1); i += 2) {
+        int left = merge[i];
+        int right = merge[i + 1];
+
+        std::string leftStr;
+        if (left < 0) {
+            leftStr = labels[-left - 1];
+        }
+        else {
+            leftStr = stack.top();
+            stack.pop();
+        }
+
+        std::string rightStr;
+        if (right < 0) {
+            rightStr = labels[-right - 1];
+        }
+        else {
+            rightStr = stack.top();
+            stack.pop();
+        }
+
+        std::string merged = "(" + leftStr + "," + rightStr + ")";
+        stack.push(merged);
+    }
+
+    return stack.top() + ";";
+}
+double* condensedDistanceMatrix(std::vector<std::vector<float>>& items, std::string distanceType) {
+    int n = items.size();
+    int f = items[0].size();
+    double* distmat = new double[(n * (n - 1)) / 2];
+    int k = 0;
+
+    auto buildIndex = [&](auto& index) {
+        for (int i = 0; i < n; i++) {
+            index.add_item(i, items[i].data());
+        }
+        index.build(-1); // Use automatic build parameter
+        };
+
+    auto computeDistances = [&](auto& index) {
+        for (int j = n - 1; j >= 0; --j) {
+            for (int i = j - 1; i >= 0; --i) {
+                distmat[k] = index.get_distance(i, j);
+                k++;
+            }
+        }
+        };
+
+
+    if (distanceType == "Manhattan") {
+        Annoy::AnnoyIndex<int32_t, float, Annoy::Manhattan, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
+        buildIndex(index);
+        computeDistances(index);
+    }
+    else if (distanceType == "Angular") {
+        Annoy::AnnoyIndex<int32_t, float, Annoy::Angular, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
+        buildIndex(index);
+        computeDistances(index);
+    }
+    else {
+        Annoy::AnnoyIndex<int32_t, float, Annoy::Euclidean, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(f);
+        buildIndex(index);
+        computeDistances(index);
+    }
+
+    return distmat;
+}
+
+QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames) {
     
     if (returnGeneList.isEmpty() || map.empty()) {
         return QVariant();
@@ -74,7 +158,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         headerTitle = QString("Mean_") + headerTitle;
         model->setHorizontalHeaderItem(i, new QStandardItem(headerTitle));
     }
-    
+    std::map<QString, QString> newickTrees;
     for (auto gene : returnGeneList)
     {
         QList<QStandardItem*> row;
@@ -94,6 +178,92 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
             
 
         }
+
+        const std::unordered_map<std::string, int> clusteringTypeMap = {
+    {"Complete", HCLUST_METHOD_COMPLETE},
+    {"Average", HCLUST_METHOD_AVERAGE},
+    {"Median", HCLUST_METHOD_MEDIAN}
+        };
+        std::string clusteringTypecurrentText = "Single";  //"Single","Complete", "Average","Median"
+        int opt_method = clusteringTypeMap.count(clusteringTypecurrentText) ? clusteringTypeMap.at(clusteringTypecurrentText) : HCLUST_METHOD_SINGLE;
+
+        auto numOfLeaves = numOfSpecies;
+        double* distmat = new double[(numOfLeaves * (numOfLeaves - 1)) / 2];
+
+        
+       
+        std::string distanceType = "Euclidean";//"Euclidean","Angular", "Manhattan" 
+        std::vector<std::vector<float>> clusteringItems;
+        clusteringItems.push_back(numbers);
+        distmat = condensedDistanceMatrix(clusteringItems, distanceType);
+
+        int* merge = new int[2 * (numOfLeaves - 1)];
+        double* height = new double[numOfLeaves - 1];
+        hclust_fast(numOfLeaves, distmat, opt_method, merge, height);
+        std::string newick = mergeToNewick(merge, numOfLeaves);
+        int totalChars = newick.length();
+        //std::cout << "\nOriginal Newick format: " << newick << std::endl;
+        //add gene and newick to newickTrees
+        newickTrees.insert(std::make_pair(gene, QString::fromStdString(newick)));
+
+        /*
+        int i = 0;
+        newick += ';';
+        std::string jsonString = "";
+        std::stringstream jsonStream;
+        while (i < newick.size()) {
+            if (newick[i] == '(') {
+                jsonStream << "{\n\"children\": [";
+                i++;
+            }
+            else if (newick[i] == ',') {
+                jsonStream << ",";
+                i++;
+            }
+            else if (newick[i] == ')') {
+                jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"width\": 1\n}";
+                i++;
+            }
+            else if (newick[i] == ';') {
+                break;
+            }
+            else {
+                if (isdigit(newick[i])) {
+                    int skip = 1;
+                    std::string num = "";
+                    for (int j = i; j < newick.size(); j++) {
+                        if (isdigit(newick[j])) {
+                            continue;
+                        }
+                        else {
+                            num = newick.substr(i, j - i);
+
+                            skip = j - i;
+                            break;
+                        }
+                    }
+                    
+
+                    std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
+                    jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
+                    i += skip;
+                }
+            }
+        }
+
+        jsonString = jsonStream.str();
+
+        nlohmann::json json = nlohmann::json::parse(jsonString);
+        std::string jsonStr = json.dump(4);
+
+        QJsonObject valueStringReference = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8()).object();
+
+        QString completedString = QJsonDocument(valueStringReference).toJson(QJsonDocument::Compact);
+
+        */
+        delete[] distmat;
+        delete[] merge;
+        delete[] height;
 
         Statistics stats = calculateStatistics(numbers);
 
@@ -116,7 +286,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
     return variant;
 }
 
-QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n) {
+QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames) {
     
     if (map.empty() || n <= 0) {
         return QVariant();
@@ -146,7 +316,7 @@ QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, floa
     for (const auto& gene : geneList) {
         returnGeneList.push_back(gene);
     }
-    return createModelFromData(returnGeneList, map);
+    return createModelFromData(returnGeneList, map, leafnames);
 }
 
 
@@ -252,6 +422,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
             auto speciesDataset = _speciesNamesDataset.getCurrentDataset();
             bool isValid = false;
             _clusterNameToGeneNameToExpressionValue.clear();
+            std::vector<QString> leafnames;
             if (clusterDataset.isValid() && pointsDataset.isValid() && speciesDataset.isValid())
             {
                 isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId() && speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
@@ -285,12 +456,13 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                             }
                         }
                     }
-
                     if (!filteredDatasets.empty())
                     {
+                        
                         for (const auto& dataset : filteredDatasets)
                         {
                             //qDebug() << dataset->getGuiName();
+                            leafnames.push_back(dataset->getGuiName());
                             auto rawData = mv::data().getDataset < Points>(dataset.getDatasetId());
                             auto dimensionNames = rawData->getDimensionNames();
                             auto children = rawData->getChildren();
@@ -340,7 +512,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 }
             }
 
-            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue());
+            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue(), leafnames);
             if (!geneListTable.isNull()) {
                 _filteredGeneNamesVariant.setVariant(geneListTable);
             }

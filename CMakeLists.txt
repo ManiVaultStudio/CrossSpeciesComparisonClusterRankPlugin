@@ -34,7 +34,7 @@ file(TO_CMAKE_PATH ${MV_INSTALL_DIR} MV_INSTALL_DIR)
 # -----------------------------------------------------------------------------
 # Dependencies
 # -----------------------------------------------------------------------------
-find_package(Qt6 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets WebEngineWidgets Concurrent REQUIRED)
 
 # -----------------------------------------------------------------------------
 # Source files
@@ -63,6 +63,18 @@ set(WEB
     res/js_libs/icicle-chart.min.css
 )
 
+set(LIBS
+    src/lib/Clustering/fastcluster.cpp
+	src/lib/Clustering/fastcluster.h
+	src/lib/Clustering/fastcluster_dm.h
+	src/lib/Clustering/fastcluster_R_dm.h
+	src/lib/JSONnlohmann/json.hpp
+	src/lib/JSONnlohmann/json_fwd.hpp
+	src/lib/Distance/annoylib.h
+	src/lib/Distance/kissrandom.h
+	src/lib/Distance/mman.h
+)
+
 set(AUX
     res/CrossSpeciesComparisonClusterRank_chart.qrc
 )
@@ -72,12 +84,12 @@ qt6_add_resources(RESOURCE_FILES res/CrossSpeciesComparisonClusterRank_chart.qrc
 source_group( Plugin FILES ${PLUGIN_SOURCES})
 source_group( Web FILES ${WEB})
 source_group( Aux FILES ${AUX})
-
+source_group( LibFiles FILES ${LIBS})
 # -----------------------------------------------------------------------------
 # CMake Target
 # -----------------------------------------------------------------------------
 # Create dynamic library for the plugin
-add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${AUX} ${WEB} ${RESOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${AUX} ${WEB} ${RESOURCE_FILES} ${LIBS})
 
 # -----------------------------------------------------------------------------
 # Target include directories
@@ -102,6 +114,7 @@ endif()
 # Link to Qt libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::WebEngineWidgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Concurrent)
 
 # Link to ManiVault and data plugins
 # The link path in this repo assumes that the ManiVault core was built locally
@@ -114,10 +127,12 @@ set(MV_LINK_SUFFIX $<IF:$<CXX_COMPILER_ID:MSVC>,${CMAKE_LINK_LIBRARY_SUFFIX},${C
 set(MV_LINK_LIBRARY "${MV_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}MV_Public${MV_LINK_SUFFIX}")
 set(POINTDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${MV_LINK_SUFFIX}") 
 set(CLUSTERDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}ClusterData${MV_LINK_SUFFIX}") 
+set(CROSSSPECIESCOMPARISONTREEDATA_LINK_LIBRARY "${PLUGIN_LINK_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}CrossSpeciesComparisonTreeData${MV_LINK_SUFFIX}")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE "${MV_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${POINTDATA_LINK_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${CLUSTERDATA_LINK_LIBRARY}")
+target_link_libraries(${PROJECT_NAME} PRIVATE "${CROSSSPECIESCOMPARISONTREEDATA_LINK_LIBRARY}")
 
 # -----------------------------------------------------------------------------
 # Target installation
