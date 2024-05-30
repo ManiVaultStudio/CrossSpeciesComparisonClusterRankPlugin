@@ -9,9 +9,9 @@
 
 
 float calculateVariance(const std::vector<float>& numbers) {
-    double sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
-    double mean = sum / numbers.size();
-    double variance = 0.0;
+    float sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
+    float mean = sum / numbers.size();
+    float variance = 0.0;
 
     for (const auto& num : numbers) {
         variance += std::pow(num - mean, 2);
@@ -22,9 +22,9 @@ float calculateVariance(const std::vector<float>& numbers) {
 
 void printMap(const std::map<QString, std::map<QString, float>>& map) {
     for (const auto& outerPair : map) {
-        //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
+        std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
         for (const auto& innerPair : outerPair.second) {
-            //std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
+            std::cout << "    Gene Name: " << innerPair.first.toStdString() << ", Expression Value: " << innerPair.second << std::endl;
         }
     }
 }
@@ -38,12 +38,16 @@ float calculateMean(const std::vector<float>& v) {
     return mean;
 }
 struct Statistics {
-    double mean;
-    double variance;
-    double stdDeviation;
+    float mean; 
+    float variance;
+    float stdDeviation;
 };
 
 Statistics calculateStatistics(const std::vector<float>& numbers) {
+    if (numbers.empty()) {
+        return { 0.0, 0.0, 0.0 };
+    }
+
     float sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
     float mean = sum / numbers.size();
     float sq_sum = std::inner_product(numbers.begin(), numbers.end(), numbers.begin(), 0.0);
@@ -267,6 +271,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                             speciesList.push_back(specie.getName());
                         }
                     }
+
+
                     mv::Datasets filteredDatasets;
                     if (!speciesList.empty())
                     {
@@ -318,7 +324,12 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                                                 rawData->populateDataForDimensions(resultContainerFull, dimensionIndex, clusterIndicesFull);
                                                 float shortMean = calculateMean(resultContainerShort);
                                                 float fullMean = calculateMean(resultContainerFull);
-                                                _clusterNameToGeneNameToExpressionValue[dataset->getGuiName()][dimensionNames[i]] = shortMean / fullMean;
+                                                float meanValue = 0.0;
+                                                if (fullMean != 0.0)
+                                                {
+                                                    meanValue = shortMean / fullMean;
+                                                }
+                                                _clusterNameToGeneNameToExpressionValue[dataset->getGuiName()][dimensionNames[i]] = meanValue;
                                             }
                                         }
                                     }
