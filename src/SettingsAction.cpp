@@ -7,6 +7,19 @@
 #include <algorithm>
 #include <vector>
 
+
+float calculateVariance(const std::vector<float>& numbers) {
+    double sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
+    double mean = sum / numbers.size();
+    double variance = 0.0;
+
+    for (const auto& num : numbers) {
+        variance += std::pow(num - mean, 2);
+    }
+
+    return variance / numbers.size();
+}
+
 void printMap(const std::map<QString, std::map<QString, float>>& map) {
     for (const auto& outerPair : map) {
         //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
@@ -24,6 +37,22 @@ float calculateMean(const std::vector<float>& v) {
 
     return mean;
 }
+struct Statistics {
+    double mean;
+    double variance;
+    double stdDeviation;
+};
+
+Statistics calculateStatistics(const std::vector<float>& numbers) {
+    float sum = std::accumulate(numbers.begin(), numbers.end(), 0.0);
+    float mean = sum / numbers.size();
+    float sq_sum = std::inner_product(numbers.begin(), numbers.end(), numbers.begin(), 0.0);
+    float variance = sq_sum / numbers.size() - mean * mean;
+    float stdDeviation = std::sqrt(variance);
+
+    return { mean, variance, stdDeviation };
+}
+
 QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map) {
     
     if (returnGeneList.isEmpty() || map.empty()) {
@@ -31,52 +60,56 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
     }
 
     QStandardItemModel* model = new QStandardItemModel();
-    model->setHorizontalHeaderItem(0, new QStandardItem("Gene"));
-    model->setHorizontalHeaderItem(1, new QStandardItem("Variance"));
-
+    QStringList initColumnNames = { "ID",  "Variance","Standard Deviation","Grand Mean"};
+    model->setHorizontalHeaderLabels(initColumnNames);
     int numOfSpecies = map.size();
     std::map<QString, std::map<QString, float>>::const_iterator it = map.begin();
-    for (int i = 0 + 2; i < numOfSpecies + 2; i++, it++) {
-        model->setHorizontalHeaderItem(i, new QStandardItem(QString("Mean_") + it->first));
+    for (int i = 0 + initColumnNames.size(); i < numOfSpecies + initColumnNames.size(); i++, it++) {
+        QString headerTitle =  it->first;
+        headerTitle.replace("_", " ");
+        headerTitle = QString("Mean_") + headerTitle;
+        model->setHorizontalHeaderItem(i, new QStandardItem(headerTitle));
     }
+    
+    for (auto gene : returnGeneList)
+    {
+        QList<QStandardItem*> row;
+        std::vector<float> numbers;
 
-    for (const auto& gene : returnGeneList) {
-        QList<QStandardItem*> rowItems;
-        rowItems.append(new QStandardItem(gene));
 
-        // Gather all expression values for this gene
-        std::vector<float> expressionValues;
-        for (const auto& species : map.at(gene)) {
-            expressionValues.push_back(species.second);
+        for (const auto& outerPair : map) {
+            QString outerKey = outerPair.first;
+            const std::map<QString, float>& innerMap = outerPair.second;
+            try {
+                numbers.push_back(innerMap.at(gene));
+            }
+            catch (const std::out_of_range& e) {
+                numbers.push_back(0);
+            }
+
+            
+
         }
 
-        // Calculate mean
-        float mean = calculateMean(expressionValues);
+        Statistics stats = calculateStatistics(numbers);
 
-        // Calculate variance
-        float variance = 0.0f;
-        for (const auto& value : expressionValues) {
-            variance += std::pow(value - mean, 2);
-        }
-        variance /= expressionValues.size();
-
-        rowItems.append(new QStandardItem(QString::number(variance)));
-
-        // Add mean values for each species
-        for (const auto& species : map.at(gene)) {
-            rowItems.append(new QStandardItem(QString::number(species.second)));
+        row.push_back(new QStandardItem(gene));
+        row.push_back(new QStandardItem(QString::number(stats.variance)));
+        row.push_back(new QStandardItem(QString::number(stats.stdDeviation)));
+        row.push_back(new QStandardItem(QString::number(stats.mean)));
+        for (auto numb : numbers)
+        {
+            row.push_back(new QStandardItem(QString::number(numb)));
         }
 
-        model->appendRow(rowItems);
+
+
+        model->appendRow(row);
     }
 
     qRegisterMetaType<QStandardItemModel>("QStandardItemModel");
     QVariant variant = QVariant::fromValue(model);
-    delete model;
     return variant;
-
-
-
 }
 
 QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n) {
