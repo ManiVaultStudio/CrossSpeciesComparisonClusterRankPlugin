@@ -315,7 +315,7 @@ model->appendRow(row);
     
     
     //print clusteringMap    '
-    for (auto& cluster : clusteringMap) {
+    /*for (auto& cluster : clusteringMap) {
         QString newick = cluster.first;
         std::vector<QString> genes = cluster.second;
 
@@ -329,7 +329,7 @@ model->appendRow(row);
         }
 
     }
-
+    */
 
 
 
