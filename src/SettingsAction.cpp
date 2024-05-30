@@ -303,7 +303,7 @@ model->appendRow(row);
     //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
 
     //colors
-    // left right color codes https://encycolorpedia.com/00a2ed #ff5d12 #00a2ed
+    // left right color codes https://encycolorpedia.com/00a2ed #ff5d12 and #00a2ed  or #0fb1e0 and #f04e1f
     //testing
     //clusteringMap[clusteringMap.begin()->first] = { "VSTM5", "REC8", "TPGS2" }; 
     //clusteringMap[(++clusteringMap.begin())->first] = { "FGD6", "ANGEL1","FANCC" };
