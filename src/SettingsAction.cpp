@@ -813,16 +813,17 @@ inline SettingsAction::OptionSelectionAction::OptionSelectionAction(SettingsActi
 {
     setText("Options");
     setIcon(Application::getIconFont("FontAwesome").getIcon("wrench"));
-    addAction(&_settingsAction.getMainPointsDataset());
-    addAction(&_settingsAction.getHierarchyTopClusterDataset());
-    addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
-    addAction(&_settingsAction.getHierarchyBottomClusterDataset());
-    addAction(&_settingsAction.getSpeciesNamesDataset());
-    addAction(&_settingsAction.getSelectedClusterNames());
-    addAction(&_settingsAction.getFilteredGeneNames());
-    addAction(&_settingsAction.getTopNGenesFilter());
-    addAction(&_settingsAction.getUpdateButtonForGeneFiltering());
-   //addAction(&_settingsAction.getReferenceTreeDataset());
+    //addAction(&_settingsAction.getMainPointsDataset());
+    //addAction(&_settingsAction.getHierarchyTopClusterDataset());
+    //addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
+    //addAction(&_settingsAction.getHierarchyBottomClusterDataset());
+    //addAction(&_settingsAction.getSpeciesNamesDataset());
+    //addAction(&_settingsAction.getReferenceTreeDataset());
+   // addAction(&_settingsAction.getSelectedClusterNames());
+    //addAction(&_settingsAction.getFilteredGeneNames());
+    //addAction(&_settingsAction.getTopNGenesFilter());
+   // addAction(&_settingsAction.getUpdateButtonForGeneFiltering());
+   
 }
 
 
