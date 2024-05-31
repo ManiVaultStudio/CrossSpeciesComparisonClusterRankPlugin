@@ -403,7 +403,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
-        if (sim > 0) {
+        if (sim == 0) {
             // Find the corresponding gene in the model
             QList<QStandardItem*> items = model->findItems(pair.first);
             for (auto& item : items) {
