@@ -43,8 +43,15 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
     // Add widget to layout
-    layout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
-    layout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
+    auto settingslayout = new QHBoxLayout();
+
+    settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
+
+    layout->addLayout(settingslayout);
+
     layout->addWidget(_chartWidget,1);
 
     // Apply the layout
