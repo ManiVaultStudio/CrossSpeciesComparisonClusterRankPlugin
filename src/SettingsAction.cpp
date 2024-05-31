@@ -321,7 +321,7 @@ model->appendRow(row);
         int sim = Calculate(&t1, &t2);
 
 
-        qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
+        //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
         if (sim==0) {
