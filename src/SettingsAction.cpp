@@ -322,9 +322,9 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
 
     //check which newick trees are exactly similar to "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));" and add color "#00a2ed" to the genes
     // Define the target newick tree and color
-    std::string targetNewick = "((((((20,(((((18,24),(19,17)),16),(11,25)),(9,6))),(23,4)),((3,1),(15,(22,((13,2),7))))),(10,5)),(8,21)),(12,14));";
+    //std::string targetNewick = "((((((20,(((((18,24),(19,17)),16),(11,25)),(9,6))),(23,4)),((3,1),(15,(22,((13,2),7))))),(10,5)),(8,21)),(12,14));";
     QString targetColor = "#fdb900";
-
+    std::string targetNewick="";
     QStringList fullTreeNames;
     if (treeDatasetId != "")
     {
@@ -332,6 +332,12 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         if (fullTreeData.isValid())
         {
             fullTreeNames = fullTreeData->getTreeLeafNames();
+            auto treeData = fullTreeData->getTreeData();
+
+            QJsonDocument jsonDoc(treeData);
+            auto temp = jsonDoc.toJson(QJsonDocument::Compact).toStdString();
+            auto jsonTree = nlohmann::json::parse(temp);
+            targetNewick = jsonToNewick(jsonTree, leafnames);
         }
 
     }
@@ -343,7 +349,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
     targetNewick += ";";  // End of Newick string
 
     */
-    if (fullTreeNames.size()>0 && leafnames.size()>0)
+    if (fullTreeNames.size()>0 && leafnames.size()>0 && targetNewick!="")
     {
 
    //convert  std::vector<QString> to QStringList leafnames
@@ -357,11 +363,15 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
     if(areSameIgnoreOrder(fullTreeNames, copyleafNames)){
     // Iterate over the newickTrees map
     for (auto& pair : newickTrees) {
-
+/*
+        qDebug() << "\n*****************";
+        qDebug() << "First tree: " << pair.second;
+        qDebug() << "Second tree: " << QString::fromStdString(targetNewick);
+        qDebug() << "*****************\n";
+        */
         const char* string1 = targetNewick.c_str();
         const char* string2 = pair.second.toStdString().c_str();
-
-
+        
         //const char* string1 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),(23,(1,17))),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));";
         //const char* string2 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(16,3)),(7,5)),(13,4));";
 
@@ -393,7 +403,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
-        if (sim == 0) {
+        if (sim > 0) {
             // Find the corresponding gene in the model
             QList<QStandardItem*> items = model->findItems(pair.first);
             for (auto& item : items) {
