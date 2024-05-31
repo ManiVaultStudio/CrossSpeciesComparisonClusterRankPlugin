@@ -45,7 +45,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     // Add widget to layout
     auto settingslayout = new QHBoxLayout();
 
-    settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
+    //settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
     settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
     settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
     settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));

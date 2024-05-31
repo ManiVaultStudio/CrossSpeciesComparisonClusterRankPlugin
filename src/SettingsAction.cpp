@@ -794,6 +794,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _updateButtonForGeneFiltering.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
+    _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
 
 }
 
@@ -821,6 +822,7 @@ inline SettingsAction::OptionSelectionAction::OptionSelectionAction(SettingsActi
     addAction(&_settingsAction.getFilteredGeneNames());
     addAction(&_settingsAction.getTopNGenesFilter());
     addAction(&_settingsAction.getUpdateButtonForGeneFiltering());
+   //addAction(&_settingsAction.getReferenceTreeDataset());
 }
 
 
@@ -837,6 +839,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     //_updateButtonForGeneFiltering.fromParentVariantMap(variantMap);
     _topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
+    _referenceTreeDataset.fromParentVariantMap(variantMap);
 }
 
 QVariantMap SettingsAction::toVariantMap() const
@@ -852,6 +855,6 @@ QVariantMap SettingsAction::toVariantMap() const
     //_updateButtonForGeneFiltering.insertIntoVariantMap(variantMap);
     _topNGenesFilter.insertIntoVariantMap(variantMap);
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
-
+    _referenceTreeDataset.insertIntoVariantMap(variantMap);
     return variantMap;
 }
