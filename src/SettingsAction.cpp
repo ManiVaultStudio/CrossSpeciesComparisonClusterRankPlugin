@@ -296,31 +296,29 @@ model->appendRow(row);
         //const char* string1 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),(23,(1,17))),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));";
         //const char* string2 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(16,3)),(7,5)),(13,4));";
 
-        // Create two Tree objects
+// Create two Tree objects
         Tree t1;
         Tree t2;
 
-        // Change the standard input to read from the strings
-        freopen("CON", "r", stdin);
-        FILE* file1;
-        FILE* file2;
-        fopen_s(&file1, "file1.txt", "w");
-        fputs(string1, file1);
-        fclose(file1);
-        fopen_s(&file2, "file2.txt", "w");
-        fputs(string2, file2);
-        fclose(file2);
+        // Create two input string streams
+        std::istringstream iss1(string1);
+        std::istringstream iss2(string2);
 
-        // Read tree structures from the strings
-        freopen("file1.txt", "r", stdin);
+        // Save the original stdin buffer
+        std::streambuf* orig_cin = std::cin.rdbuf();
+
+        // Redirect std::cin to read from the string streams
+        std::cin.rdbuf(iss1.rdbuf());
         t1.CreateTree();
-        freopen("file2.txt", "r", stdin);
+
+        std::cin.rdbuf(iss2.rdbuf());
         t2.CreateTree();
+
+        // Restore original stdin buffer
+        std::cin.rdbuf(orig_cin);
 
         // Calculate and print the similarity
         int sim = Calculate(&t1, &t2);
-
-
 
 
         qDebug()<<"\n****Simvalue: "<<sim<<"****\n";

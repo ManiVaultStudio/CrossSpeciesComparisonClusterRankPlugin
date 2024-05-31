@@ -11,14 +11,14 @@
 
 using namespace std;
 
-int CharToInt(char* c)
+int CharToInt(std::istream& in, char* c)
 {
     int temp = 0;
     while (*c <= '9' && *c >= '0')
     {
         temp *= 10;
         temp += (*c - '0');
-        scanf_s("%c", c, 1);
+        in.get(*c);
     }
 
     return temp;
@@ -307,8 +307,8 @@ struct Tree
         Node* actual = tip;
         Vertice* actualver;
         actualver = new Vertice();
-        scanf_s("%c", &c, 1);
-        while (c != ';')
+        std::cin.get(c);
+        while (c != ';' && !std::cin.eof())
         {
             if (c <= '9' && c >= '0')
             {
@@ -316,14 +316,14 @@ struct Tree
                 if (actual->value != 0)
                 {
                     Node* temp;
-                    temp = new Node(CharToInt(&c));
+                    temp = new Node(CharToInt(std::cin, &c));
                     nod.Push(temp);
                     actual->AddBrother(temp);
                     temp->parent = actual->parent;
                     temp->vertice = actual->vertice;
                     actual = temp;
                 }
-                else actual->value = CharToInt(&c);
+                else actual->value = CharToInt(std::cin, &c);
 
                 actualver->nodes.Push(actual);
             }
@@ -348,7 +348,7 @@ struct Tree
                     actualver = actualver->parent;
                 }
 
-                scanf_s("%c", &c, 1);
+                std::cin.get(c);
             }
         }
         List<Vertice*> v;
@@ -364,6 +364,8 @@ struct Tree
 
         CreateTab();
     }
+
+
 
     ~Tree()
     {
