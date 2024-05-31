@@ -26,7 +26,24 @@ float calculateVariance(const std::vector<float>& numbers) {
 
     return variance / numbers.size();
 }
-
+std::string jsonToNewick(const nlohmann::json& node, const std::vector<QString>& species) {
+    std::string newick;
+    if (node.contains("children")) {
+        newick += "(";
+        for (const auto& child : node["children"]) {
+            newick += jsonToNewick(child, species) + ",";
+        }
+        newick = newick.substr(0, newick.size() - 1);  // Remove trailing comma
+        newick += ")";
+    }
+    if (node.contains("name")) {
+        auto it = std::find(species.begin(), species.end(), node["name"].get<std::string>());
+        if (it != species.end()) {
+            newick += std::to_string(std::distance(species.begin(), it) + 1);  // Indices start from 1
+        }
+    }
+    return newick;
+}
 void printMap(const std::map<QString, std::map<QString, float>>& map) {
     for (const auto& outerPair : map) {
         //std::cout << "Cluster Name: " << outerPair.first.toStdString() << std::endl;
@@ -283,13 +300,21 @@ model->appendRow(row);
 
     //check which newick trees are exactly similar to "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));" and add color "#00a2ed" to the genes
     // Define the target newick tree and color
-    QString targetNewick = "((((((20,(((((18,24),(19,17)),16),(11,25)),(9,6))),(23,4)),((3,1),(15,(22,((13,2),7))))),(10,5)),(8,21)),(12,14));";
+    std::string targetNewick = "((((((20,(((((18,24),(19,17)),16),(11,25)),(9,6))),(23,4)),((3,1),(15,(22,((13,2),7))))),(10,5)),(8,21)),(12,14));";
     QString targetColor = "#fdb900";
+
+    /*
+    
+    auto jsonTree = nlohmann::json::parse(jsonString);
+    std::string targetNewick = jsonToNewick(jsonTree, leafnames);
+    targetNewick += ";";  // End of Newick string
+
+    */
 
     // Iterate over the newickTrees map
     for (auto& pair : newickTrees) {
 
-        const char* string1 = targetNewick.toStdString().c_str();
+        const char* string1 = targetNewick.c_str();
         const char* string2 = pair.second.toStdString().c_str();
 
 
