@@ -73,6 +73,7 @@ set(LIBS
 	src/lib/Distance/annoylib.h
 	src/lib/Distance/kissrandom.h
 	src/lib/Distance/mman.h
+	src/lib/NewickComparator/newick_comparator.h
 )
 
 set(AUX

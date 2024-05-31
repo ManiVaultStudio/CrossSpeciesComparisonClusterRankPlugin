@@ -12,6 +12,7 @@
 #include <QtConcurrent>
 #include "lib/JSONnlohmann/json.hpp"
 #include "lib/Clustering/fastcluster.h"
+#include "lib/NewickComparator/newick_comparator.h"
 #include <stack>
 #include <sstream>
 float calculateVariance(const std::vector<float>& numbers) {
@@ -274,9 +275,9 @@ model->appendRow(row);
     }
 
     //print newickTrees
-    for (auto& pair : newickTrees) {
-        std::cout << "Gene: " << pair.first.toStdString() << ", Newick: " << pair.second.toStdString() << std::endl;
-    }
+    //for (auto& pair : newickTrees) {
+    //    std::cout << "Gene: " << pair.first.toStdString() << ", Newick: " << pair.second.toStdString() << std::endl;
+    //}
 
 
 
@@ -287,8 +288,45 @@ model->appendRow(row);
 
     // Iterate over the newickTrees map
     for (auto& pair : newickTrees) {
+
+        const char* string1 = targetNewick.toStdString().c_str();
+        const char* string2 = pair.second.toStdString().c_str();
+
+
+        //const char* string1 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),(23,(1,17))),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));";
+        //const char* string2 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(16,3)),(7,5)),(13,4));";
+
+        // Create two Tree objects
+        Tree t1;
+        Tree t2;
+
+        // Change the standard input to read from the strings
+        freopen("CON", "r", stdin);
+        FILE* file1;
+        FILE* file2;
+        fopen_s(&file1, "file1.txt", "w");
+        fputs(string1, file1);
+        fclose(file1);
+        fopen_s(&file2, "file2.txt", "w");
+        fputs(string2, file2);
+        fclose(file2);
+
+        // Read tree structures from the strings
+        freopen("file1.txt", "r", stdin);
+        t1.CreateTree();
+        freopen("file2.txt", "r", stdin);
+        t2.CreateTree();
+
+        // Calculate and print the similarity
+        int sim = Calculate(&t1, &t2);
+
+
+
+
+        qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
+
         // If the current newick tree is the same as the target
-        if (pair.second == targetNewick) {
+        if (sim==0) {
             // Find the corresponding gene in the model
             QList<QStandardItem*> items = model->findItems(pair.first);
             for (auto& item : items) {
