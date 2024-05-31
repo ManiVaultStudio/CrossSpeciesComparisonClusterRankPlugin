@@ -90,6 +90,7 @@ public: // Action getters
     DatasetPickerAction& getSpeciesNamesDataset() { return _speciesNamesDataset; }
     IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
+    DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
 
 public: // Serialization
 
@@ -118,4 +119,5 @@ protected:
     std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
     IntegralAction          _topNGenesFilter;
     OptionSelectionAction         _optionSelectionAction;
+    DatasetPickerAction    _referenceTreeDataset;
 };
