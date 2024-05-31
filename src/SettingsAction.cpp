@@ -273,10 +273,43 @@ for (auto numb : numbers)
 model->appendRow(row);
     }
 
+    //print newickTrees
+    for (auto& pair : newickTrees) {
+        std::cout << "Gene: " << pair.first.toStdString() << ", Newick: " << pair.second.toStdString() << std::endl;
+    }
 
+
+
+    //check which newick trees are exactly similar to "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));" and add color "#00a2ed" to the genes
+    // Define the target newick tree and color
+    QString targetNewick = "((((((20,(((((18,24),(19,17)),16),(11,25)),(9,6))),(23,4)),((3,1),(15,(22,((13,2),7))))),(10,5)),(8,21)),(12,14));";
+    QString targetColor = "#fdb900";
+
+    // Iterate over the newickTrees map
+    for (auto& pair : newickTrees) {
+        // If the current newick tree is the same as the target
+        if (pair.second == targetNewick) {
+            // Find the corresponding gene in the model
+            QList<QStandardItem*> items = model->findItems(pair.first);
+            for (auto& item : items) {
+                // Get the row of the item
+                int row = item->row();
+                // Set the background color of each item in the row
+                for (int i = 0; i < model->columnCount(); i++) {
+                    QStandardItem* itemInRow = model->item(row, i);
+                    if (itemInRow) {
+                        itemInRow->setBackground(QBrush(QColor(targetColor)));
+                    }
+                }
+            }
+        }
+    }
+
+    
 
 
     //check which newick trees are the same and group them together
+    /*
     std::map<QString, std::vector<QString>> clusteringMap;
 
     for (auto it = newickTrees.begin(); it != newickTrees.end(); ++it) {
@@ -300,6 +333,7 @@ model->appendRow(row);
             }
         }
     }
+    */
     //QStringList colorCodes = {"#8dd3c7" ,"#ffffb3"}
 
     //colors
@@ -325,7 +359,7 @@ model->appendRow(row);
 
     }
     */
-
+    /*
     QStringList colorCodes = { "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f", "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" };
     int colorIndex = 0;
     for (auto& cluster : clusteringMap) {
@@ -345,6 +379,8 @@ model->appendRow(row);
             colorIndex = (colorIndex + 1) % colorCodes.size();
         }
     }
+
+    */
     return QVariant::fromValue(model);
 
 }
