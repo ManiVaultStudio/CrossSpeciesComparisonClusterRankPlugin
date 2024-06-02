@@ -4,9 +4,11 @@
 
 #include <Dataset.h>
 #include <PointData/PointData.h>
+#include <ClusterData/ClusterData.h>
 #include <widgets/DropWidget.h>
-
+#include "SettingsAction.h"
 #include <QWidget>
+#include <actions/HorizontalToolbarAction.h>
 
 /** All plugin related classes are in the ManiVault plugin namespace */
 using namespace mv::plugin;
@@ -64,9 +66,23 @@ private:
     void publishSelection(const std::vector<QString>& selectedIDs);
 
     QString getCurrentDataSetID() const;
+    SettingsAction& getSettingsAction() { return _settingsAction; }
+public: // Serialization
 
-private:
+    /**
+     * Load plugin from variant map
+     * @param Variant map representation of the plugin
+     */
+    Q_INVOKABLE void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save plugin to variant map
+     * @return Variant map representation of the plugin
+     */
+    Q_INVOKABLE QVariantMap toVariantMap() const override;
+protected:
     ChartWidget*            _chartWidget;       // WebWidget that sets up the HTML page
+    SettingsAction      _settingsAction;    // Settings action for the plugin
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
 };

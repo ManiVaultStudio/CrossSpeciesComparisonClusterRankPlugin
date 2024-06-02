@@ -23,7 +23,8 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
     ViewPlugin(factory),
     _chartWidget(nullptr),
     _dropWidget(nullptr),
-    _currentDataSet(nullptr)
+    _currentDataSet(nullptr),
+    _settingsAction(*this)
 {
 }
 
@@ -31,6 +32,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 {
     getWidget().setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
+     
+    
     // Create layout
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -40,10 +43,26 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
     // Add widget to layout
-    layout->addWidget(_chartWidget);
+    auto settingslayout = new QHBoxLayout();
+
+    //settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
+    settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
+
+    layout->addLayout(settingslayout);
+
+    layout->addWidget(_chartWidget,1);
 
     // Apply the layout
     getWidget().setLayout(layout);
+
+
+
+    
+
+
+
 
     // Instantiate new drop widget: See CrossSpeciesComparisonClusterRank for details
     _dropWidget = new DropWidget(_chartWidget);
@@ -102,6 +121,9 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
+
+
+
 }
 
 void CrossSpeciesComparisonClusterRankPlugin::loadData(const mv::Datasets& datasets)
@@ -140,7 +162,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     //if (!_currentDataSet.isValid())
        // return;
 
-    qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
+    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
     _dropWidget->setShowDropIndicator(false);
     _currentDataSet;
     QVariantList dataForChart = {
@@ -293,7 +315,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
     if (jsonString!="")
     {
-        qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
+       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
         emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
     }
     
@@ -301,19 +323,68 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
-    if (!selectedIDs.empty())
+    auto clusterDataset= _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+    auto pointsDataset= _settingsAction.getMainPointsDataset().getCurrentDataset();
+    //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
+
+
+    if (clusterDataset.isValid() && pointsDataset.isValid())
     {
-        //qDebug() << "\nSelectedIDs: ";
-        for (const auto& id : selectedIDs)
-        {
-            //qDebug() << id + " ,";
+        bool isValid = false;
+        isValid = clusterDataset->getParent().getDatasetId() == pointsDataset->getId();//&& speciesDataset->getParent().getDatasetId() == pointsDataset->getId();
+
+
+        QList<QString> list;
+        for (const auto& id : selectedIDs) {
+            list.append(id);
         }
-        //qDebug() << "\n";
-    }
-    else
-    {
+
+        QVariant variant = QVariant::fromValue(list);
+        _settingsAction.getSelectedClusterNames().setVariant(variant);
+
+        if (isValid)
+        {
+            std::vector<std::uint32_t> selectedIndices;
+            if (!selectedIDs.empty())
+            {
+
+                auto rawData = mv::data().getDataset < Clusters>(clusterDataset.getDatasetId());
+                auto clusters = rawData->getClusters();
+                if (clusters.size() > 0)
+                {
+                    for (auto cluster : clusters)
+                    {
+                        auto clusterName = cluster.getName();
+                        //if selectedIDs contains cluster.getName()
+                        if (std::find(selectedIDs.begin(), selectedIDs.end(), clusterName) != selectedIDs.end())
+                        {
+                            auto clusterIndices = cluster.getIndices();
+                            selectedIndices.insert(selectedIndices.end(), clusterIndices.begin(), clusterIndices.end());
+                        }
+
+
+
+
+                    }
+                }
+
+            }
+            pointsDataset->setSelectionIndices(selectedIndices);
+            mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+        }
+        else
+        {
+            qDebug() << "Datasets not valid";
+        }
 
     }
+
+    else
+    {
+        qDebug() << "Datasets not valid";
+    }
+    
+
     
 
     //// ask core for the selection set for the current data set
@@ -485,7 +556,24 @@ QString CrossSpeciesComparisonClusterRankPlugin::getCurrentDataSetID() const
     else
         return QString{};
 }
+void CrossSpeciesComparisonClusterRankPlugin::fromVariantMap(const QVariantMap& variantMap)
+{
+    ViewPlugin::fromVariantMap(variantMap);
 
+    mv::util::variantMapMustContain(variantMap, "CSCCR:Cross-Species Comparison Cluster Rank Settings");
+    _settingsAction.fromVariantMap(variantMap["CSCCR:Cross-Species Comparison Cluster Rank Settings"].toMap());
+
+
+}
+
+QVariantMap CrossSpeciesComparisonClusterRankPlugin::toVariantMap() const
+{
+    QVariantMap variantMap = ViewPlugin::toVariantMap();
+
+    _settingsAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}
 
 // =============================================================================
 // Plugin Factory 
