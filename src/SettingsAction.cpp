@@ -338,6 +338,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
             auto temp = jsonDoc.toJson(QJsonDocument::Compact).toStdString();
             auto jsonTree = nlohmann::json::parse(temp);
             targetNewick = jsonToNewick(jsonTree, leafnames);
+            targetNewick += ";";  // End of Newick string
         }
 
     }
@@ -369,36 +370,43 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         qDebug() << "Second tree: " << QString::fromStdString(targetNewick);
         qDebug() << "*****************\n";
         */
-        const char* string1 = targetNewick.c_str();
-        const char* string2 = pair.second.toStdString().c_str();
+        //add a ";" to the end of the string pair.second.toStdString()
+        std::string modifiedNewick = pair.second.toStdString();
+
+       const char* string1 = targetNewick.c_str();
+       const char* string2 = modifiedNewick.c_str();
         
         //const char* string1 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),(23,(1,17))),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));";
         //const char* string2 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(16,3)),(7,5)),(13,4));";
 
-// Create two Tree objects
+    // Create two Tree objects
         Tree t1;
         Tree t2;
 
-        // Create two input string streams
-        std::istringstream iss1(string1);
-        std::istringstream iss2(string2);
+        // Change the standard input to read from the strings
+        freopen("CON", "r", stdin);
+        FILE* file1;
+        FILE* file2;
+        fopen_s(&file1, "file1.txt", "w");
+        fputs(string1, file1);
+        fclose(file1);
+        fopen_s(&file2, "file2.txt", "w");
+        fputs(string2, file2);
+        fclose(file2);
 
-        // Save the original stdin buffer
-        std::streambuf* orig_cin = std::cin.rdbuf();
-
-        // Redirect std::cin to read from the string streams
-        std::cin.rdbuf(iss1.rdbuf());
+        // Read tree structures from the strings
+        freopen("file1.txt", "r", stdin);
         t1.CreateTree();
-
-        std::cin.rdbuf(iss2.rdbuf());
+        freopen("file2.txt", "r", stdin);
         t2.CreateTree();
-
-        // Restore original stdin buffer
-        std::cin.rdbuf(orig_cin);
 
         // Calculate and print the similarity
         int sim = Calculate(&t1, &t2);
-
+        qDebug() << "\n*****************\n"
+            << "First tree: " << string1
+            << "\nSecond tree: " << string2
+            << "\nSimvalue: " << sim
+            << "\n*****************\n";
 
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
