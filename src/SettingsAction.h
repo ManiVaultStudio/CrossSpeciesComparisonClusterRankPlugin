@@ -1,6 +1,7 @@
 #pragma once
 #include <actions/WidgetAction.h>
 #include <actions/IntegralAction.h>
+#include <actions/DecimalAction.h>
 #include <actions/OptionAction.h>
 #include <actions/OptionsAction.h>
 #include <actions/ToggleAction.h>
@@ -91,6 +92,7 @@ public: // Action getters
     IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
     DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
+    DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
 
 public: // Serialization
 
@@ -120,4 +122,5 @@ protected:
     IntegralAction          _topNGenesFilter;
     OptionSelectionAction         _optionSelectionAction;
     DatasetPickerAction    _referenceTreeDataset;
+    DecimalAction          _treeSimilarity;
 };

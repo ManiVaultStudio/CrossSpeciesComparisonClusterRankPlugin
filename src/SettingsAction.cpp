@@ -177,7 +177,7 @@ double* condensedDistanceMatrix(std::vector<float>& items) {
  
 }
 
-QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, QString treeDatasetId) {
+QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, QString treeDatasetId ,float treeSimilarityScore) {
 
     if (returnGeneList.isEmpty() || map.empty()) {
         return QVariant();
@@ -338,6 +338,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
             auto temp = jsonDoc.toJson(QJsonDocument::Compact).toStdString();
             auto jsonTree = nlohmann::json::parse(temp);
             targetNewick = jsonToNewick(jsonTree, leafnames);
+            targetNewick += ";";  // End of Newick string
         }
 
     }
@@ -369,41 +370,49 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         qDebug() << "Second tree: " << QString::fromStdString(targetNewick);
         qDebug() << "*****************\n";
         */
-        const char* string1 = targetNewick.c_str();
-        const char* string2 = pair.second.toStdString().c_str();
+        //add a ";" to the end of the string pair.second.toStdString()
+        std::string modifiedNewick = pair.second.toStdString();
+
+       const char* string1 = targetNewick.c_str();
+       const char* string2 = modifiedNewick.c_str();
         
         //const char* string1 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),(23,(1,17))),((2,18),(8,6))),(14,10)),(3,16)),(7,5)),(13,4));";
         //const char* string2 = "(((((((20,(((24,((25,9),(12,11))),(19,15)),(22,21))),((1,17),23)),((2,18),(8,6))),(14,10)),(16,3)),(7,5)),(13,4));";
 
-// Create two Tree objects
+    // Create two Tree objects
         Tree t1;
         Tree t2;
 
-        // Create two input string streams
-        std::istringstream iss1(string1);
-        std::istringstream iss2(string2);
+        // Change the standard input to read from the strings
+        freopen("CON", "r", stdin);
+        FILE* file1;
+        FILE* file2;
+        fopen_s(&file1, "file1.txt", "w");
+        fputs(string1, file1);
+        fclose(file1);
+        fopen_s(&file2, "file2.txt", "w");
+        fputs(string2, file2);
+        fclose(file2);
 
-        // Save the original stdin buffer
-        std::streambuf* orig_cin = std::cin.rdbuf();
-
-        // Redirect std::cin to read from the string streams
-        std::cin.rdbuf(iss1.rdbuf());
+        // Read tree structures from the strings
+        freopen("file1.txt", "r", stdin);
         t1.CreateTree();
-
-        std::cin.rdbuf(iss2.rdbuf());
+        freopen("file2.txt", "r", stdin);
         t2.CreateTree();
-
-        // Restore original stdin buffer
-        std::cin.rdbuf(orig_cin);
 
         // Calculate and print the similarity
         int sim = Calculate(&t1, &t2);
-
+        qDebug() << "\n*****************\n"
+            << "First tree: " << string1
+            << "\nSecond tree: " << string2
+            << "\nSimvalue: " << sim
+            << "\n*****************\n";
 
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
-        if (sim == 0) {
+        int x= (1-treeSimilarityScore)*numOfSpecies;
+        if (sim <= x) {
             // Find the corresponding gene in the model
             QList<QStandardItem*> items = model->findItems(pair.first);
             for (auto& item : items) {
@@ -500,7 +509,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
 
 }
 
-QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId) {
+QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId, float treeSimilarityScore) {
     
     if (map.empty() || n <= 0) {
         return QVariant();
@@ -530,7 +539,7 @@ QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, floa
     for (const auto& gene : geneList) {
         returnGeneList.push_back(gene);
     }
-    return createModelFromData(returnGeneList, map, leafnames, datasetId);
+    return createModelFromData(returnGeneList, map, leafnames, datasetId, treeSimilarityScore);
 }
 
 
@@ -547,7 +556,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset(this, "Species Names Dataset"),
     _topNGenesFilter(this, "Top N Genes Filter"),
     _optionSelectionAction(*this),
-    _referenceTreeDataset(this, "Reference Tree Dataset")
+    _referenceTreeDataset(this, "Reference Tree Dataset"),
+    _treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
@@ -560,6 +570,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setSerializationName("CSCCR:SpeciesNamesDataset");
     _topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
     _referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
+    _treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setToolTip("Main Points Dataset");
@@ -573,7 +584,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _topNGenesFilter.setToolTip("Top N Genes Filter");
     _topNGenesFilter.initialize(1, 100, 10);
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
-
+    _treeSimilarity.setToolTip("Tree Similarity");
+    _treeSimilarity.initialize(0.0, 1.0, 1.0);
 
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
@@ -754,8 +766,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                     }
                 }
             }
-
-            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue(), leafnames, datasetId);
+            
+            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue(), leafnames, datasetId, _treeSimilarity.getValue() );
 
    if (!geneListTable.isNull()) 
    {
@@ -795,6 +807,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
     _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
 
 }
 
@@ -841,6 +854,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
     _referenceTreeDataset.fromParentVariantMap(variantMap);
+    _treeSimilarity.fromParentVariantMap(variantMap);
 }
 
 QVariantMap SettingsAction::toVariantMap() const
@@ -857,5 +871,6 @@ QVariantMap SettingsAction::toVariantMap() const
     _topNGenesFilter.insertIntoVariantMap(variantMap);
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
     _referenceTreeDataset.insertIntoVariantMap(variantMap);
+    _treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }

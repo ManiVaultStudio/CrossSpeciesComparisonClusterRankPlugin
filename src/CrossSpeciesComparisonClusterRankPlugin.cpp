@@ -24,7 +24,8 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
     _chartWidget(nullptr),
     _dropWidget(nullptr),
     _currentDataSet(nullptr),
-    _settingsAction(*this)
+    _settingsAction(*this),
+    _toolbarAction(this, "Toolbar")
 {
 }
 
@@ -43,14 +44,20 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
     // Add widget to layout
-    auto settingslayout = new QHBoxLayout();
+    //auto settingslayout = new QHBoxLayout();
 
     //settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
-    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
-    settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
-    settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
+    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
+    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
+    //settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
+   
+    _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),3);
+    _toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
+    _toolbarAction.addAction(&_settingsAction.getUpdateButtonForGeneFiltering(),1);
 
-    layout->addLayout(settingslayout);
+    layout->addWidget(_toolbarAction.createWidget(&getWidget()));
+
+    //layout->addLayout(settingslayout);
 
     layout->addWidget(_chartWidget,1);
 
