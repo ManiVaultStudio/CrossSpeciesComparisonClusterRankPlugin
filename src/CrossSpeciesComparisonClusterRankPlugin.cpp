@@ -51,7 +51,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
     //settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
    
-    _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),3);
+    _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),4);
+    _toolbarAction.addAction(&_settingsAction.getTopNGenesFilter(),3);
     _toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
     _toolbarAction.addAction(&_settingsAction.getUpdateButtonForGeneFiltering(),1);
 
