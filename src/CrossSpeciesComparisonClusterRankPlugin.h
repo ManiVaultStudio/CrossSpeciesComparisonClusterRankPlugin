@@ -85,6 +85,7 @@ protected:
     SettingsAction      _settingsAction;    // Settings action for the plugin
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
+    HorizontalToolbarAction     _toolbarAction;    // Toolbar action that is shown in the main window
 };
 
 /**

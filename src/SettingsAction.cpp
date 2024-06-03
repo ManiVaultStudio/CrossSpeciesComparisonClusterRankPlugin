@@ -177,7 +177,7 @@ double* condensedDistanceMatrix(std::vector<float>& items) {
  
 }
 
-QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, QString treeDatasetId) {
+QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, QString treeDatasetId ,float treeSimilarityScore) {
 
     if (returnGeneList.isEmpty() || map.empty()) {
         return QVariant();
@@ -411,7 +411,8 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
-        if (sim == 0) {
+        int x= (1-treeSimilarityScore)*numOfSpecies;
+        if (sim <= x) {
             // Find the corresponding gene in the model
             QList<QStandardItem*> items = model->findItems(pair.first);
             for (auto& item : items) {
@@ -508,7 +509,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
 
 }
 
-QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId) {
+QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId, float treeSimilarityScore) {
     
     if (map.empty() || n <= 0) {
         return QVariant();
@@ -538,7 +539,7 @@ QVariant  findTopNGenesPerCluster(const std::map<QString, std::map<QString, floa
     for (const auto& gene : geneList) {
         returnGeneList.push_back(gene);
     }
-    return createModelFromData(returnGeneList, map, leafnames, datasetId);
+    return createModelFromData(returnGeneList, map, leafnames, datasetId, treeSimilarityScore);
 }
 
 
@@ -555,7 +556,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset(this, "Species Names Dataset"),
     _topNGenesFilter(this, "Top N Genes Filter"),
     _optionSelectionAction(*this),
-    _referenceTreeDataset(this, "Reference Tree Dataset")
+    _referenceTreeDataset(this, "Reference Tree Dataset"),
+    _treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
@@ -568,6 +570,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setSerializationName("CSCCR:SpeciesNamesDataset");
     _topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
     _referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
+    _treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setToolTip("Main Points Dataset");
@@ -581,7 +584,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _topNGenesFilter.setToolTip("Top N Genes Filter");
     _topNGenesFilter.initialize(1, 100, 10);
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
-
+    _treeSimilarity.setToolTip("Tree Similarity");
+    _treeSimilarity.initialize(0.0, 1.0, 1.0);
 
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
@@ -762,8 +766,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                     }
                 }
             }
-
-            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue(), leafnames, datasetId);
+            
+            QVariant geneListTable = findTopNGenesPerCluster(_clusterNameToGeneNameToExpressionValue, _topNGenesFilter.getValue(), leafnames, datasetId, _treeSimilarity.getValue() );
 
    if (!geneListTable.isNull()) 
    {
@@ -803,6 +807,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
     _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
 
 }
 
@@ -849,6 +854,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
     _referenceTreeDataset.fromParentVariantMap(variantMap);
+    _treeSimilarity.fromParentVariantMap(variantMap);
 }
 
 QVariantMap SettingsAction::toVariantMap() const
@@ -865,5 +871,6 @@ QVariantMap SettingsAction::toVariantMap() const
     _topNGenesFilter.insertIntoVariantMap(variantMap);
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
     _referenceTreeDataset.insertIntoVariantMap(variantMap);
+    _treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }
