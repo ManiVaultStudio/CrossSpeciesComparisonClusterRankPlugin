@@ -585,7 +585,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _topNGenesFilter.initialize(1, 100, 10);
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
     _treeSimilarity.setToolTip("Tree Similarity");
-    _treeSimilarity.initialize(0.0, 1.0, 1.0);
+    _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
 
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
