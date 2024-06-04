@@ -306,7 +306,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
         //qDebug() << "\n**Trying to find key:" << gene << "\n";
         auto it = geneCounter.find(key);
         if (it != geneCounter.end()) {
-            QString value = QString::number(it->second) + "/" + QString::number(numOfSpecies);
+            QString value = QString::number(it->second) + "/" + QString::number(numOfSpecies) + " Species";
             //qDebug() << "Key found. Value:" << value << "\n";
             row.push_back(new QStandardItem(value));
         }
