@@ -184,7 +184,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
     }
 
     QStandardItemModel* model = new QStandardItemModel();
-    QStringList initColumnNames = { "ID",  "Variance","Top "+QString::number(n)+" Appearances","Similarity", "Standard Deviation","Grand Mean" };
+    QStringList initColumnNames = { "ID",  "Variance","Top "+QString::number(n)+" Appearances","Tree Similarity with Reference Tree", "Standard Deviation","Grand Mean" };
     model->setHorizontalHeaderLabels(initColumnNames);
     int numOfSpecies = map.size();
     std::map<QString, std::map<QString, float>>::const_iterator it = map.begin();
