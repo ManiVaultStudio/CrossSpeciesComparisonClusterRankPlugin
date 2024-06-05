@@ -347,13 +347,14 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
 }
 
-QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::vector<std::uint32_t> selectedIndices, std::vector<QString> leafnames)
+QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::map<QString, int> speciesSelectedIndicesCounter)
 {
     QJsonObject valueStringReference;
 
     {
     
         std::vector<float> numbers;
+        std::vector<QString> leafnames;
 
         const std::unordered_map<std::string, int> clusteringTypeMap = {
     {"Complete", HCLUST_METHOD_COMPLETE},
@@ -363,8 +364,18 @@ QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::vector<
         std::string clusteringTypecurrentText = "Single";  //"Single","Complete", "Average","Median"
         int opt_method = clusteringTypeMap.count(clusteringTypecurrentText) ? clusteringTypeMap.at(clusteringTypecurrentText) : HCLUST_METHOD_SINGLE;
 
-        auto numOfLeaves = leafnames.size();
+        auto numOfLeaves = speciesSelectedIndicesCounter.size();
         double* distmat = new double[(numOfLeaves * (numOfLeaves - 1)) / 2];
+
+        //iterate std::map<QString, int> speciesSelectedIndicesCounter and populate numbers
+        for (auto& [key, value] : speciesSelectedIndicesCounter)
+        {
+            numbers.push_back(value);
+            leafnames.push_back(key);
+        }
+
+
+
 
 
         distmat = _settingsAction.condensedDistanceMatrix(numbers);
@@ -379,7 +390,7 @@ QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::vector<
         std::string newick = _settingsAction.mergeToNewick(merge, numOfLeaves);
         int totalChars = newick.length();
         //append a ";" to the end of the newick string
-
+        qDebug()<<"Newick format: " << QString::fromStdString(newick);
         newick += ';';
         //std::cout << "Newick format: " << newick << std::endl;
         int i = 0;
@@ -511,19 +522,37 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
     if (_mainTreeDataset.isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
     {
         
-        std::vector<QString> leafnames;
+        
         auto speciesDataset = mv::data().getDataset<Clusters>(_settingsAction.getSpeciesNamesDataset().getCurrentDataset().getDatasetId());
-
+        std::map<QString, int> speciesSelectedIndicesCounter;
         auto speciesData = speciesDataset->getClusters();
         for (auto species : speciesData)
         {
-            leafnames.push_back(species.getName());
+            auto speciesNameKey= species.getName();
+            int speciescellCountValue = 0;
+            auto indices= species.getIndices();
+            speciescellCountValue = std::count_if(selectedIndices.begin(), selectedIndices.end(), [&](const auto& element) {
+                return std::find(indices.begin(), indices.end(), element) != indices.end();
+                });
+            
+            speciesSelectedIndicesCounter.insert({ speciesNameKey, speciescellCountValue });
         }
 
-        if (leafnames.size()>0)
+        if ( speciesSelectedIndicesCounter.size()>0)
         {
            // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
-            QJsonObject valueStringReference = createJsonTree(selectedIndices, leafnames);
+            QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
+            //print speciesSelectedIndicesCounter
+            qDebug() << "*******************";
+            int i = 1;
+            for (auto& [key, value] : speciesSelectedIndicesCounter)
+            {
+                qDebug() << i<< key << " : " << value;
+                i++;
+            }
+            qDebug() << "*******************";
+
+
             _mainTreeDataset->setTreeData(valueStringReference);
             events().notifyDatasetDataChanged(_mainTreeDataset);
         }

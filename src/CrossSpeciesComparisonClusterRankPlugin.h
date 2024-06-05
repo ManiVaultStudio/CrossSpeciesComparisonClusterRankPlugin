@@ -66,7 +66,7 @@ public slots:
 private:
     /** Published selections received from the JS side to ManiVault's core */
     void publishSelection(const std::vector<QString>& selectedIDs);
-    QJsonObject createJsonTree(std::vector<std::uint32_t> selectedIndices, std::vector<QString> leafnames);
+    QJsonObject createJsonTree(std::map<QString, int> speciesSelectedIndicesCounter);
     QString getCurrentDataSetID() const;
     SettingsAction& getSettingsAction() { return _settingsAction; }
 public: // Serialization

@@ -150,31 +150,15 @@ double* SettingsAction::condensedDistanceMatrix(std::vector<float>& items) {
             ++k;
         }
     }
+
+    std::cout << "Distance matrix: " << std::endl;
+    int index = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            std::cout << "Distance " << i << " value: " << items[i] << " and " << j << " value: " << items[j] << ": " << distmat[index++] << std::endl;
+        }
+    }
     return distmat;
-   
-    //    int n = items.size();
-    //double* distmat = new double[(n * (n - 1)) / 2];
-    //int k = 0;
-
-    //// Build Annoy index
-    //Annoy::AnnoyIndex<int32_t, float, Annoy::Euclidean, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
-    ////Annoy::AnnoyIndex<int32_t, float, Annoy::Manhattan, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
-    ////Annoy::AnnoyIndex<int32_t, float, Annoy::Angular, Annoy::Kiss32Random, Annoy::AnnoyIndexSingleThreadedBuildPolicy> index(1);
-    //for (int i = 0; i < n; ++i) {
-    //    index.add_item(i, &items[i]);
-    //}
-    //index.build(10);  // 10 is the number of trees for the index. More trees gives higher precision.
-
-    //// Calculate distances
-    //for (int i = 0; i < n; ++i) {
-    //    for (int j = i + 1; j < n; ++j) {
-    //        distmat[k] = index.get_distance(i, j);
-    //        ++k;
-    //    }
-    //}
-
-    //return distmat;
- 
 }
 
 QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, const QString& treeDatasetId ,const float& treeSimilarityScore, const std::map<QString, int>& geneCounter, const int& n) {
