@@ -390,7 +390,7 @@ QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::map<QSt
         std::string newick = _settingsAction.mergeToNewick(merge, numOfLeaves);
         int totalChars = newick.length();
         //append a ";" to the end of the newick string
-        qDebug()<<"Newick format: " << QString::fromStdString(newick);
+        //qDebug()<<"Newick format: " << QString::fromStdString(newick);
         newick += ';';
         //std::cout << "Newick format: " << newick << std::endl;
         int i = 0;
@@ -543,6 +543,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
            // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
             QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
             //print speciesSelectedIndicesCounter
+            /*
             qDebug() << "*******************";
             int i = 1;
             for (auto& [key, value] : speciesSelectedIndicesCounter)
@@ -551,7 +552,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
                 i++;
             }
             qDebug() << "*******************";
-
+            */
 
             _mainTreeDataset->setTreeData(valueStringReference);
             events().notifyDatasetDataChanged(_mainTreeDataset);

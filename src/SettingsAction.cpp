@@ -151,13 +151,13 @@ double* SettingsAction::condensedDistanceMatrix(std::vector<float>& items) {
         }
     }
 
-    std::cout << "Distance matrix: " << std::endl;
+    /*std::cout << "Distance matrix: " << std::endl;
     int index = 0;
     for (int i = 0; i < n; ++i) {
         for (int j = i + 1; j < n; ++j) {
             std::cout << "Distance " << i << " value: " << items[i] << " and " << j << " value: " << items[j] << ": " << distmat[index++] << std::endl;
         }
-    }
+    }*/
     return distmat;
 }
 
