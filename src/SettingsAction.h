@@ -93,6 +93,11 @@ public: // Action getters
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
     DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
     //DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
+    double* condensedDistanceMatrix(std::vector<float>& items);
+    std::string mergeToNewick(int* merge, int numOfLeaves);
+    private:
+        QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, const QString& treeDatasetId, const float& treeSimilarityScore, const std::map<QString, int>& geneCounter, const int& n);
+        QVariant findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId, float treeSimilarityScore);
 
 public: // Serialization
 

@@ -103,7 +103,7 @@ Statistics calculateStatistics(const std::vector<float>& numbers) {
     return { mean, variance, stdDeviation };
 }
 
-std::string mergeToNewick(int* merge, int numOfLeaves) {
+std::string SettingsAction::mergeToNewick(int* merge, int numOfLeaves) {
     std::vector<std::string> labels(numOfLeaves);
     for (int i = 0; i < numOfLeaves; ++i) {
         labels[i] = std::to_string(i + 1);
@@ -139,7 +139,7 @@ std::string mergeToNewick(int* merge, int numOfLeaves) {
 
     return stack.top() + ";";
 }
-double* condensedDistanceMatrix(std::vector<float>& items) {
+double* SettingsAction::condensedDistanceMatrix(std::vector<float>& items) {
     int n = items.size();
     double* distmat = new double[(n * (n - 1)) / 2];
     int k = 0;
@@ -177,7 +177,7 @@ double* condensedDistanceMatrix(std::vector<float>& items) {
  
 }
 
-QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, const QString& treeDatasetId ,const float& treeSimilarityScore, const std::map<QString, int>& geneCounter, const int& n) {
+QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, std::vector<QString> leafnames, const QString& treeDatasetId ,const float& treeSimilarityScore, const std::map<QString, int>& geneCounter, const int& n) {
 
     if (returnGeneList.isEmpty() || map.empty()) {
         return QVariant();
@@ -573,7 +573,7 @@ QVariant createModelFromData(const QStringList& returnGeneList, const std::map<Q
 
 }
 
-QVariant findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId, float treeSimilarityScore) {
+QVariant SettingsAction::findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, std::vector<QString> leafnames, QString datasetId, float treeSimilarityScore) {
     
     if (map.empty() || n <= 0) {
         return QVariant();
