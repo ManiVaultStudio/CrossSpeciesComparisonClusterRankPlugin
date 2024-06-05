@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <random>
-#include <ClusterData/ClusterData.h>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -14,6 +13,25 @@
 #include <QVariantMap>
 #include <QMimeData>
 #include <QDebug>
+
+
+#include "lib/JSONnlohmann/json.hpp"
+#include "lib/Clustering/fastcluster.h"
+#include "lib/JSONnlohmann/json.hpp"
+#include "lib/Clustering/fastcluster.h"
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QString>
+#include <execution>
+#include <cmath>
+#include <algorithm>
+#include <sstream>
+#include <stack>
+#include "lib/Distance/annoylib.h"
+#include "lib/Distance/kissrandom.h"
 
 Q_PLUGIN_METADATA(IID "studio.manivault.CrossSpeciesComparisonClusterRankPlugin")
 
@@ -52,7 +70,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     //settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
    
     _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),3);
-    _toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
+    _toolbarAction.addAction(&_settingsAction.getTopNGenesFilter(),2);
+    //_toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
     _toolbarAction.addAction(&_settingsAction.getUpdateButtonForGeneFiltering(),1);
 
     layout->addWidget(_toolbarAction.createWidget(&getWidget()));
@@ -139,7 +158,7 @@ void CrossSpeciesComparisonClusterRankPlugin::loadData(const mv::Datasets& datas
     if (datasets.isEmpty())
         return;
 
-    qDebug() << "CrossSpeciesComparisonClusterRankPlugin::loadData: Load data set from ManiVault core";
+    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::loadData: Load data set from ManiVault core";
 
     // Load the first dataset, changes to _currentDataSet are connected with convertDataAndUpdateChart
     _currentDataSet = datasets.first();
@@ -328,12 +347,115 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
 }
 
+QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::map<QString, int> speciesSelectedIndicesCounter)
+{
+    QJsonObject valueStringReference;
+
+    {
+    
+        std::vector<float> numbers;
+        std::vector<QString> leafnames;
+
+        const std::unordered_map<std::string, int> clusteringTypeMap = {
+    {"Complete", HCLUST_METHOD_COMPLETE},
+    {"Average", HCLUST_METHOD_AVERAGE},
+    {"Median", HCLUST_METHOD_MEDIAN}
+        };
+        std::string clusteringTypecurrentText = "Single";  //"Single","Complete", "Average","Median"
+        int opt_method = clusteringTypeMap.count(clusteringTypecurrentText) ? clusteringTypeMap.at(clusteringTypecurrentText) : HCLUST_METHOD_SINGLE;
+
+        auto numOfLeaves = speciesSelectedIndicesCounter.size();
+        double* distmat = new double[(numOfLeaves * (numOfLeaves - 1)) / 2];
+
+        //iterate std::map<QString, int> speciesSelectedIndicesCounter and populate numbers
+        for (auto& [key, value] : speciesSelectedIndicesCounter)
+        {
+            numbers.push_back(value);
+            leafnames.push_back(key);
+        }
+
+
+
+
+
+        distmat = _settingsAction.condensedDistanceMatrix(numbers);
+
+        int* merge = new int[2 * (numOfLeaves - 1)];
+        double* height = new double[numOfLeaves - 1];
+        hclust_fast(numOfLeaves, distmat, opt_method, merge, height);
+
+
+
+
+        std::string newick = _settingsAction.mergeToNewick(merge, numOfLeaves);
+        int totalChars = newick.length();
+        //append a ";" to the end of the newick string
+        qDebug()<<"Newick format: " << QString::fromStdString(newick);
+        newick += ';';
+        //std::cout << "Newick format: " << newick << std::endl;
+        int i = 0;
+        std::string jsonString = "";
+        std::stringstream jsonStream;
+        while (i < newick.size()) {
+            if (newick[i] == '(') {
+                jsonStream << "{\n\"children\": [";
+                i++;
+            }
+            else if (newick[i] == ',') {
+                jsonStream << ",";
+                i++;
+            }
+            else if (newick[i] == ')') {
+                jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"width\": 1\n}";
+                i++;
+            }
+            else if (newick[i] == ';') {
+                break;
+            }
+            else {
+                if (isdigit(newick[i])) {
+                    int skip = 1;
+                    std::string num = "";
+                    for (int j = i; j < newick.size(); j++) {
+                        if (isdigit(newick[j])) {
+                            continue;
+                        }
+                        else {
+                            num = newick.substr(i, j - i);
+
+                            skip = j - i;
+                            break;
+                        }
+                    }
+                    std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
+                    jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
+                    i += skip;
+                }
+            }
+        }
+
+        jsonString = jsonStream.str();
+
+        nlohmann::json json = nlohmann::json::parse(jsonString);
+        std::string jsonStr = json.dump(4);
+        //qDebug()<< "CrossSpeciesComparisonClusterRankPlugin::createJsonTree: jsonStr: " << QString::fromStdString(jsonStr);
+        
+    valueStringReference = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8()).object();
+    delete[] distmat;
+    delete[] merge;
+    delete[] height;
+}
+
+    return valueStringReference;
+}
+
+
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {
     auto clusterDataset= _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
     auto pointsDataset= _settingsAction.getMainPointsDataset().getCurrentDataset();
     //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
-
+    std::vector<std::uint32_t> selectedIndices;
 
     if (clusterDataset.isValid() && pointsDataset.isValid())
     {
@@ -351,7 +473,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 
         if (isValid)
         {
-            std::vector<std::uint32_t> selectedIndices;
+           
             if (!selectedIDs.empty())
             {
 
@@ -391,8 +513,52 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
         qDebug() << "Datasets not valid";
     }
     
-
+    if (!_mainTreeDataset.isValid())
+    {
+        _mainTreeDataset = mv::data().createDataset("CrossSpeciesComparisonTree", "SelectionTreeDataset");
+        events().notifyDatasetAdded(_mainTreeDataset);
+    }
     
+    if (_mainTreeDataset.isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
+    {
+        
+        
+        auto speciesDataset = mv::data().getDataset<Clusters>(_settingsAction.getSpeciesNamesDataset().getCurrentDataset().getDatasetId());
+        std::map<QString, int> speciesSelectedIndicesCounter;
+        auto speciesData = speciesDataset->getClusters();
+        for (auto species : speciesData)
+        {
+            auto speciesNameKey= species.getName();
+            int speciescellCountValue = 0;
+            auto indices= species.getIndices();
+            speciescellCountValue = std::count_if(selectedIndices.begin(), selectedIndices.end(), [&](const auto& element) {
+                return std::find(indices.begin(), indices.end(), element) != indices.end();
+                });
+            
+            speciesSelectedIndicesCounter.insert({ speciesNameKey, speciescellCountValue });
+        }
+
+        if ( speciesSelectedIndicesCounter.size()>0)
+        {
+           // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
+            QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
+            //print speciesSelectedIndicesCounter
+            qDebug() << "*******************";
+            int i = 1;
+            for (auto& [key, value] : speciesSelectedIndicesCounter)
+            {
+                qDebug() << i<< key << " : " << value;
+                i++;
+            }
+            qDebug() << "*******************";
+
+
+            _mainTreeDataset->setTreeData(valueStringReference);
+            events().notifyDatasetDataChanged(_mainTreeDataset);
+        }
+
+    }
+
 
     //// ask core for the selection set for the current data set
     //auto selectionSet = _currentDataSet->getSelection<Points>();

@@ -5,6 +5,7 @@
 #include <Dataset.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
+#include<CrossSpeciesComparisonTreeData.h>
 #include <widgets/DropWidget.h>
 #include "SettingsAction.h"
 #include <QWidget>
@@ -61,10 +62,11 @@ public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
 
+
 private:
     /** Published selections received from the JS side to ManiVault's core */
     void publishSelection(const std::vector<QString>& selectedIDs);
-
+    QJsonObject createJsonTree(std::map<QString, int> speciesSelectedIndicesCounter);
     QString getCurrentDataSetID() const;
     SettingsAction& getSettingsAction() { return _settingsAction; }
 public: // Serialization
@@ -86,6 +88,7 @@ protected:
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
     HorizontalToolbarAction     _toolbarAction;    // Toolbar action that is shown in the main window
+    Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
 };
 
 /**
