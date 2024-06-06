@@ -390,64 +390,20 @@ QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::map<QSt
         std::string newick = _settingsAction.mergeToNewick(merge, numOfLeaves);
         int totalChars = newick.length();
         //append a ";" to the end of the newick string
-        qDebug()<<"Newick format: " << QString::fromStdString(newick);
+        //qDebug()<<"Newick format: " << QString::fromStdString(newick);
         newick += ';';
         //std::cout << "Newick format: " << newick << std::endl;
-        int i = 0;
-        std::string jsonString = "";
-        std::stringstream jsonStream;
-        while (i < newick.size()) {
-            if (newick[i] == '(') {
-                jsonStream << "{\n\"children\": [";
-                i++;
-            }
-            else if (newick[i] == ',') {
-                jsonStream << ",";
-                i++;
-            }
-            else if (newick[i] == ')') {
-                jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"width\": 1\n}";
-                i++;
-            }
-            else if (newick[i] == ';') {
-                break;
-            }
-            else {
-                if (isdigit(newick[i])) {
-                    int skip = 1;
-                    std::string num = "";
-                    for (int j = i; j < newick.size(); j++) {
-                        if (isdigit(newick[j])) {
-                            continue;
-                        }
-                        else {
-                            num = newick.substr(i, j - i);
-
-                            skip = j - i;
-                            break;
-                        }
-                    }
-                    std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
-                    jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
-                    i += skip;
-                }
-            }
-        }
-
-        jsonString = jsonStream.str();
-
-        nlohmann::json json = nlohmann::json::parse(jsonString);
-        std::string jsonStr = json.dump(4);
-        //qDebug()<< "CrossSpeciesComparisonClusterRankPlugin::createJsonTree: jsonStr: " << QString::fromStdString(jsonStr);
-        
-    valueStringReference = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8()).object();
+        QString formattedtree = _settingsAction.createJsonTreeFromNewick(QString::fromStdString(newick),leafnames);
+        valueStringReference = QJsonDocument::fromJson(formattedtree.toUtf8()).object();
     delete[] distmat;
     delete[] merge;
     delete[] height;
 }
+    
 
     return valueStringReference;
 }
+
 
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
@@ -543,6 +499,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
            // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
             QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
             //print speciesSelectedIndicesCounter
+            /*
             qDebug() << "*******************";
             int i = 1;
             for (auto& [key, value] : speciesSelectedIndicesCounter)
@@ -551,7 +508,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
                 i++;
             }
             qDebug() << "*******************";
-
+            */
 
             _mainTreeDataset->setTreeData(valueStringReference);
             events().notifyDatasetDataChanged(_mainTreeDataset);
