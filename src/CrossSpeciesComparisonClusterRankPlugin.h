@@ -87,7 +87,7 @@ protected:
     SettingsAction      _settingsAction;    // Settings action for the plugin
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
-    Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
+    //Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
 };
 
 /**

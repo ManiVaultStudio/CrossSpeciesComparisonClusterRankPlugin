@@ -475,13 +475,9 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
         qDebug() << "Datasets not valid";
     }
     
-    if (!_mainTreeDataset.isValid())
-    {
-        _mainTreeDataset = mv::data().createDataset("CrossSpeciesComparisonTree", "SelectionTreeDataset");
-        events().notifyDatasetAdded(_mainTreeDataset);
-    }
+
     
-    if (_mainTreeDataset.isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
+    if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
     {
         
         
@@ -516,10 +512,15 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
             qDebug() << "*******************";
             */
 
-            _mainTreeDataset->setTreeData(valueStringReference);
-            events().notifyDatasetDataChanged(_mainTreeDataset);
+            auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+            mainTreeDataset->setTreeData(valueStringReference);
+            events().notifyDatasetDataChanged(mainTreeDataset);
         }
 
+    }
+    else
+    {
+        qDebug() << "Datasets not valid";
     }
 
 
