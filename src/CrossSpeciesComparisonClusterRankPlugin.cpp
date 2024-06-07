@@ -42,8 +42,7 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
     _chartWidget(nullptr),
     _dropWidget(nullptr),
     _currentDataSet(nullptr),
-    _settingsAction(*this),
-    _toolbarAction(this, "Toolbar")
+    _settingsAction(*this)
 {
 }
 
@@ -61,31 +60,38 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget = new ChartWidget(this);
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
-    // Add widget to layout
-    //auto settingslayout = new QHBoxLayout();
-
-    //settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
    
-    _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),3);
-    _toolbarAction.addAction(&_settingsAction.getTopNGenesFilter(),2);
-    //_toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
-    _toolbarAction.addAction(&_settingsAction.getUpdateButtonForGeneFiltering(),1);
+    auto mainLayout = new QVBoxLayout();
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-    layout->addWidget(_toolbarAction.createWidget(&getWidget()));
+    auto mainOptionsLayout = new QHBoxLayout();
+    mainOptionsLayout->setSpacing(0);
+    mainOptionsLayout->setContentsMargins(0, 0, 0, 0);
+    auto extraOptionsGroup = new VerticalGroupAction(this, "Settings");
 
-    //layout->addLayout(settingslayout);
+    extraOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyTopClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyBottomClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
+    extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
+    extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
 
-    layout->addWidget(_chartWidget,1);
 
-    // Apply the layout
-    getWidget().setLayout(layout);
+    auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
+    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
+    mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
 
+    mainOptionsLayout->addWidget(mainOptionsGroup->createWidget(&getWidget()), 2);
+    mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
 
+    mainLayout->addLayout(mainOptionsLayout);
+    mainLayout->addWidget(_chartWidget, 1);
 
-    
+    getWidget().setLayout(mainLayout);
+   
 
 
 
@@ -198,9 +204,9 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
                 createLeaf("Microglia/PVM", "#94af97", 20566)
             }),
             createNode("VLMC", "#697255", {
-                createLeaf("No Agreement", "silver", 133072),
+                createLeaf("No Agreement", "#C0C0C0", 133072),
                 createLeaf("VLMC", "#697255", 7968),
-                createLeaf("Unknown", "silver", 50)
+                createLeaf("Unknown", "#C0C0C0", 50)
             }),
             createNode("Endo", "#8d6c62", {
                 createLeaf("Endo", "#8d6c62", 9123)
@@ -327,7 +333,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     //                        {"name", "optimization"},
     //                        {"color", "olive"},
     //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "AspectRatioBanker"}, {"color", "silver"}, {"value", 7074}},
+    //                            QVariantMap{{"name", "AspectRatioBanker"}, {"color", "#C0C0C0"}, {"value", 7074}},
     //                        }},
     //                    },
     //                }},
