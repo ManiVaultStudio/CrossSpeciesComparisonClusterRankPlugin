@@ -716,8 +716,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset(this, "Species Names Dataset"),
     //_topNGenesFilter(this, "Top N Genes Filter"),
     _optionSelectionAction(*this),
-    //_referenceTreeDataset(this, "Reference Tree Dataset"),
-    _filterTreeDataset(this, "Filter Tree Dataset")
+    _referenceTreeDataset(this, "Reference Tree Dataset"),
+    _filterTreeDataset(this, "Filter Tree Dataset"),
+    _geneNamesConnection(this, "Gene Names Connection")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -730,8 +731,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_updateButtonForGeneFiltering.setSerializationName("CSCCR:UpdateButtonForGeneFiltering");
     _speciesNamesDataset.setSerializationName("CSCCR:SpeciesNamesDataset");
     //_topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
-    //_referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
+    _referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
     _filterTreeDataset.setSerializationName("CSCCR:FilterTreeDataset");
+    _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
@@ -746,7 +748,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _filterTreeDataset.setToolTip("Filter Tree Dataset");
     //_topNGenesFilter.setToolTip("Top N Genes Filter");
     //_topNGenesFilter.initialize(1, 100, 10);
-    //_referenceTreeDataset.setToolTip("Reference Tree Dataset");
+    _referenceTreeDataset.setToolTip("Reference Tree Dataset");
+    _geneNamesConnection.setToolTip("Gene Names Connection");
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
 
@@ -770,10 +773,13 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _filterTreeDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == CrossSpeciesComparisonTreeType;
         });
-
+    _referenceTreeDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+        return dataset->getDataType() == CrossSpeciesComparisonTreeType;
+        });
+    const auto filterTreedatasetUpdate = [this]() -> void {};
+    connect(&_filterTreeDataset, &DatasetPickerAction::currentIndexChanged, this, filterTreedatasetUpdate);
     const auto referenceTreedatasetUpdate = [this]() -> void {};
-    connect(&_filterTreeDataset, &DatasetPickerAction::currentIndexChanged, this, referenceTreedatasetUpdate);
-
+    connect(&_referenceTreeDataset, &DatasetPickerAction::currentIndexChanged, this, referenceTreedatasetUpdate);
     const auto hierarchyTopClusterDatasetUpdate = [this]() -> void
         {
 
@@ -969,7 +975,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_updateButtonForGeneFiltering.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     //_topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
-    //_referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _filterTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
 
 }
@@ -994,7 +1002,7 @@ inline SettingsAction::OptionSelectionAction::OptionSelectionAction(SettingsActi
     //addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
     //addAction(&_settingsAction.getHierarchyBottomClusterDataset());
     //addAction(&_settingsAction.getSpeciesNamesDataset());
-    //addAction(&_settingsAction.getReferenceTreeDataset());
+   ///addAction(&_settingsAction.getReferenceTreeDataset());
    // addAction(&_settingsAction.getSelectedClusterNames());
     //addAction(&_settingsAction.getFilteredGeneNames());
     //addAction(&_settingsAction.getTopNGenesFilter());
@@ -1017,7 +1025,8 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     //_topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
     _filterTreeDataset.fromParentVariantMap(variantMap);
-    //_referenceTreeDataset.fromParentVariantMap(variantMap);
+    _referenceTreeDataset.fromParentVariantMap(variantMap);
+    _geneNamesConnection.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
 }
 
@@ -1034,7 +1043,8 @@ QVariantMap SettingsAction::toVariantMap() const
     //_updateButtonForGeneFiltering.insertIntoVariantMap(variantMap);
     //_topNGenesFilter.insertIntoVariantMap(variantMap);
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
-    //_referenceTreeDataset.insertIntoVariantMap(variantMap);
+    _referenceTreeDataset.insertIntoVariantMap(variantMap);
+    _geneNamesConnection.insertIntoVariantMap(variantMap);
     _filterTreeDataset.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;

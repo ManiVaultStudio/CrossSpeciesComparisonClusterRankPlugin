@@ -92,7 +92,8 @@ public: // Action getters
     DatasetPickerAction& getFilterTreeDataset() { return _filterTreeDataset; }
     //IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
-    //DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
+    DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
+    StringAction& getGeneNamesConnection() { return _geneNamesConnection; }
     //DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
@@ -129,7 +130,8 @@ protected:
     //std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
     //IntegralAction          _topNGenesFilter;
     OptionSelectionAction         _optionSelectionAction;
-    //DatasetPickerAction    _referenceTreeDataset;
+    DatasetPickerAction    _referenceTreeDataset;
+    StringAction           _geneNamesConnection;
     //DecimalAction          _treeSimilarity;
 
 };

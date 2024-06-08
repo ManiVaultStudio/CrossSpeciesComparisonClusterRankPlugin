@@ -78,7 +78,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
     extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
     extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
-
+    extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
 
     auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
@@ -514,7 +515,9 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 
             auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
             mainTreeDataset->setTreeData(valueStringReference);
+
             events().notifyDatasetDataChanged(mainTreeDataset);
+            _settingsAction.getGeneNamesConnection().setString("");
         }
 
     }
