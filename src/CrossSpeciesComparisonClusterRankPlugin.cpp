@@ -80,10 +80,11 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-
+    extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    
     auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
-    mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
 
     mainOptionsLayout->addWidget(mainOptionsGroup->createWidget(&getWidget()), 2);
     mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
@@ -94,7 +95,11 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     getWidget().setLayout(mainLayout);
    
 
-
+    const auto getCreatePointSelectTreeUpdate = [this]() -> void
+        {
+            //TODO:: add the tree to the tree dataset
+        };
+    connect(&_settingsAction.getCreatePointSelectTree(), &TriggerAction::triggered, this, getCreatePointSelectTreeUpdate);
 
 
     // Instantiate new drop widget: See CrossSpeciesComparisonClusterRank for details

@@ -718,7 +718,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _optionSelectionAction(*this),
     _referenceTreeDataset(this, "Reference Tree Dataset"),
     _filterTreeDataset(this, "Filter Tree Dataset"),
-    _geneNamesConnection(this, "Gene Names Connection")
+    _geneNamesConnection(this, "Gene Names Connection"),
+    _createPointSelectTree(this, "Create Point Select Tree")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -733,6 +734,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
     _referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
     _filterTreeDataset.setSerializationName("CSCCR:FilterTreeDataset");
+    _createPointSelectTree.setSerializationName("CSCCR:CreatePointSelectTreeTrigger");
     _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
@@ -746,6 +748,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_updateButtonForGeneFiltering.setToolTip("Filter Genes Trigger");
     _speciesNamesDataset.setToolTip("Species Names Dataset");
     _filterTreeDataset.setToolTip("Filter Tree Dataset");
+    _createPointSelectTree.setToolTip("Create Point Select Tree Trigger");
     //_topNGenesFilter.setToolTip("Top N Genes Filter");
     //_topNGenesFilter.initialize(1, 100, 10);
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
@@ -977,6 +980,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
     _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _filterTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
 
@@ -1025,6 +1029,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     //_topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
     _filterTreeDataset.fromParentVariantMap(variantMap);
+    _createPointSelectTree.fromParentVariantMap(variantMap);
     _referenceTreeDataset.fromParentVariantMap(variantMap);
     _geneNamesConnection.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
@@ -1046,6 +1051,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _referenceTreeDataset.insertIntoVariantMap(variantMap);
     _geneNamesConnection.insertIntoVariantMap(variantMap);
     _filterTreeDataset.insertIntoVariantMap(variantMap);
+    _createPointSelectTree.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }
