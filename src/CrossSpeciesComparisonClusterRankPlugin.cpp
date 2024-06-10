@@ -97,7 +97,65 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     const auto getCreatePointSelectTreeUpdate = [this]() -> void
         {
-            //TODO:: add the tree to the tree dataset
+            
+            auto clusterDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+            auto pointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
+            //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
+            std::vector<std::uint32_t> selectedIndices= pointsDataset->getSelectionIndices();
+            
+            if (clusterDataset.isValid() && pointsDataset.isValid())
+            {
+
+            }
+
+            if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size() > 0)
+            {
+
+
+                auto speciesDataset = mv::data().getDataset<Clusters>(_settingsAction.getSpeciesNamesDataset().getCurrentDataset().getDatasetId());
+                std::map<QString, int> speciesSelectedIndicesCounter;
+                auto speciesData = speciesDataset->getClusters();
+                for (auto species : speciesData)
+                {
+                    auto speciesNameKey = species.getName();
+                    int speciescellCountValue = 0;
+                    auto indices = species.getIndices();
+                    speciescellCountValue = std::count_if(selectedIndices.begin(), selectedIndices.end(), [&](const auto& element) {
+                        return std::find(indices.begin(), indices.end(), element) != indices.end();
+                        });
+
+                    speciesSelectedIndicesCounter.insert({ speciesNameKey, speciescellCountValue });
+                }
+
+                if (speciesSelectedIndicesCounter.size() > 0)
+                {
+                    // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
+                    QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
+                    //print speciesSelectedIndicesCounter
+                    /*
+                    qDebug() << "*******************";
+                    int i = 1;
+                    for (auto& [key, value] : speciesSelectedIndicesCounter)
+                    {
+                        qDebug() << i<< key << " : " << value;
+                        i++;
+                    }
+                    qDebug() << "*******************";
+                    */
+
+                    auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+                    mainTreeDataset->setTreeData(valueStringReference);
+
+                    events().notifyDatasetDataChanged(mainTreeDataset);
+                    _settingsAction.getGeneNamesConnection().setString("");
+                }
+
+            }
+            else
+            {
+                qDebug() << "Datasets not valid";
+            }
+
         };
     connect(&_settingsAction.getCreatePointSelectTree(), &TriggerAction::triggered, this, getCreatePointSelectTreeUpdate);
 
