@@ -719,11 +719,13 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _referenceTreeDataset(this, "Reference Tree Dataset"),
     _filterTreeDataset(this, "Filter Tree Dataset"),
     _geneNamesConnection(this, "Gene Names Connection"),
-    _createPointSelectTree(this, "Create Point Select Tree")
+    _createPointSelectTree(this, "Create Point Select Tree"),
+    _embeddingDataset(this, "Embedding Dataset")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
+    _embeddingDataset.setSerializationName("CSCCR:EmbeddingDataset");
     _hierarchyTopClusterDataset.setSerializationName("CSCCR:HierarchyTopClusterDataset");
     _hierarchyMiddleClusterDataset.setSerializationName("CSCCR:HierarchyMiddleClusterDataset");
     _hierarchyBottomClusterDataset.setSerializationName("CSCCR:HierarchyBottomClusterDataset");
@@ -740,6 +742,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
     setText("Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setToolTip("Main Points Dataset");
+    _embeddingDataset.setToolTip("Embedding Dataset");
     _hierarchyTopClusterDataset.setToolTip("Hierarchy Top Cluster Dataset");
     _hierarchyMiddleClusterDataset.setToolTip("Hierarchy Middle Cluster Dataset");
     _hierarchyBottomClusterDataset.setToolTip("Hierarchy Bottom Cluster Dataset");
@@ -759,7 +762,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
         });
-
+    _embeddingDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+        return dataset->getDataType() == PointType;
+        });
     _hierarchyTopClusterDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == ClusterType;
         });
@@ -803,11 +808,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         };
     connect(&_hierarchyBottomClusterDataset, &DatasetPickerAction::currentIndexChanged, this, hierarchyBottomClusterDatasetUpdate);
 
-    const auto mainPointsDatasetUpdate = [this]() -> void
-        {
 
-        };
-    connect(&_mainPointsDataset, &DatasetPickerAction::currentIndexChanged, this, mainPointsDatasetUpdate);
 
 
     //const auto filteredGeneNamesVariantUpdate = [this]() -> void
@@ -970,6 +971,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
 
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _embeddingDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyBottomClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
@@ -1020,6 +1022,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     WidgetAction::fromVariantMap(variantMap);
 
     _mainPointsDataset.fromParentVariantMap(variantMap);
+    _embeddingDataset.fromParentVariantMap(variantMap);
     _hierarchyTopClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyBottomClusterDataset.fromParentVariantMap(variantMap);
@@ -1040,6 +1043,7 @@ QVariantMap SettingsAction::toVariantMap() const
     QVariantMap variantMap = WidgetAction::toVariantMap();
 
     _mainPointsDataset.insertIntoVariantMap(variantMap);
+    _embeddingDataset.insertIntoVariantMap(variantMap);
     _hierarchyTopClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyBottomClusterDataset.insertIntoVariantMap(variantMap);

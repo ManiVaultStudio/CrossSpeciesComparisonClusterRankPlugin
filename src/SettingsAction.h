@@ -95,6 +95,7 @@ public: // Action getters
     DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
     StringAction& getGeneNamesConnection() { return _geneNamesConnection; }
     TriggerAction& getCreatePointSelectTree() { return _createPointSelectTree; }
+    DatasetPickerAction& getEmbeddingDataset() { return _embeddingDataset; }
     //DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
@@ -135,4 +136,5 @@ protected:
     StringAction           _geneNamesConnection;
     //DecimalAction          _treeSimilarity;
     TriggerAction         _createPointSelectTree;
+    DatasetPickerAction    _embeddingDataset;
 };

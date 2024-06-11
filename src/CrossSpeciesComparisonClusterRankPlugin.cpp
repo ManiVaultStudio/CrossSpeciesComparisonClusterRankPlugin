@@ -78,6 +78,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
     extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
     extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
     extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
@@ -94,6 +95,32 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     getWidget().setLayout(mainLayout);
    
+
+    const auto mainPointsDatasetUpdate = [this]() -> void
+        {
+            _currentDataSet = _settingsAction.getMainPointsDataset().getCurrentDataset();
+            if (_currentDataSet.isValid())
+            {
+                auto children = _currentDataSet->getChildren();
+                for (auto child : children)
+                {
+                    child->setGroupIndex(1);
+                }
+            }
+        };
+    connect(&_settingsAction.getMainPointsDataset(), &DatasetPickerAction::currentIndexChanged, this, mainPointsDatasetUpdate);
+
+    const auto embeddingDatasetUpdate = [this]() -> void
+        {
+            _embeddingDataset = _settingsAction.getEmbeddingDataset().getCurrentDataset();
+        };
+    connect(&_settingsAction.getEmbeddingDataset(), &DatasetPickerAction::currentIndexChanged, this, embeddingDatasetUpdate);
+
+    const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
+        {
+            qDebug() << "Item selected in Population Pyramid";
+        };
+    connect(&_embeddingDataset, &mv::Dataset<Points>::dataSelectionChanged, this, clusterSelectionFromPopulationPyramidDatasetChange);
 
     const auto getCreatePointSelectTreeUpdate = [this]() -> void
         {
