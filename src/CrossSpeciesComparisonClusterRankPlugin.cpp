@@ -118,7 +118,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
         {
-            qDebug() << "Item selected in Population Pyramid";
+            //qDebug() << "Item selected in Population Pyramid";
         };
     connect(&_embeddingDataset, &mv::Dataset<Points>::dataSelectionChanged, this, clusterSelectionFromPopulationPyramidDatasetChange);
 
