@@ -82,6 +82,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
     extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     
     auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
@@ -122,6 +123,64 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
         };
     connect(&_embeddingDataset, &mv::Dataset<Points>::dataSelectionChanged, this, clusterSelectionFromPopulationPyramidDatasetChange);
 
+    const auto hierarchyTopClusterDatasetUpdate = [this]() -> void
+        {
+            auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+            QStringList Options;
+            if (hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid())
+            {
+                if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+                {
+                    auto TopClusterFull= mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+                    for (auto cluster : TopClusterFull->getClusters())
+                    {
+                        
+                        auto clusterName = cluster.getName();
+                        if (clusterName!="")
+                        {
+                            Options.append(clusterName);
+                        }                        
+                    }
+                    if (!Options.isEmpty())
+                    {
+                        _settingsAction.getTopHierarchyRelativeClusterCountInclusion().setOptions(Options);
+                        _settingsAction.getTopHierarchyRelativeClusterCountInclusion().setSelectedOptions(Options);
+                    }
+                    
+                }
+
+            }
+            //&_settingsAction.getTopHierarchyRelativeClusterCountInclusion()
+   
+        };
+    connect(&_settingsAction.getHierarchyTopClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyTopClusterDatasetUpdate);
+
+    const auto getTopHierarchyRelativeClusterCountInclusionUpdate = [this]() -> void {
+        //auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+        //auto options = _settingsAction.getTopHierarchyRelativeClusterCountInclusion().getSelectedOptions();
+        //if (hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid())
+        //{
+        //    if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+        //    {
+        //        auto TopClusterFull = mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+        //        for (auto cluster : TopClusterFull->getClusters())
+        //        {
+
+        //            auto clusterName = cluster.getName();
+        //            if (options.contains(clusterName))
+        //            {
+        //                int clusterIndices = cluster.getIndices().size();
+        //                _relativeCellcount = _relativeCellcount + clusterIndices;
+        //            }
+
+        //        }
+
+        //    }
+
+        //}
+        };
+    connect(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion(), &OptionsAction::selectedOptionsChanged, this, getTopHierarchyRelativeClusterCountInclusionUpdate);
+
     const auto getCreatePointSelectTreeUpdate = [this]() -> void
         {
             
@@ -129,11 +188,35 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             auto pointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
             //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
             std::vector<std::uint32_t> selectedIndices= pointsDataset->getSelectionIndices();
-            
-            if (clusterDataset.isValid() && pointsDataset.isValid())
+
+            auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+
+
+            auto options = _settingsAction.getTopHierarchyRelativeClusterCountInclusion().getSelectedOptions();
+
+
+            int relativeCellcount = 0;
+            if (clusterDataset.isValid() && pointsDataset.isValid() && hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid() )
             {
+                if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+                {
+                    auto TopClusterFull = mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+                    for (auto cluster : TopClusterFull->getClusters())
+                    {
+
+                        auto clusterName = cluster.getName();
+                        if (options.contains(clusterName))
+                        {
+                            int clusterIndices = cluster.getIndices().size();
+                            relativeCellcount = relativeCellcount + clusterIndices;
+                        }
+
+                    }
+
+                }
 
             }
+           
 
             if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size() > 0)
             {
@@ -150,7 +233,10 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
                     speciescellCountValue = std::count_if(selectedIndices.begin(), selectedIndices.end(), [&](const auto& element) {
                         return std::find(indices.begin(), indices.end(), element) != indices.end();
                         });
-
+                    if (relativeCellcount != 0)
+                    {
+                        speciescellCountValue = (speciescellCountValue) / relativeCellcount;
+                    }
                     speciesSelectedIndicesCounter.insert({ speciesNameKey, speciescellCountValue });
                 }
 
