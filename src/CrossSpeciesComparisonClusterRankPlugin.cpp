@@ -399,31 +399,21 @@ QVariantMap createLeaf(const QString& name, const QString& color, int value)
     return leaf;
 }
 
-
 QVariantList buildChartData(const std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>>& fullhierarchyMap) {
     QVariantList chartData;
     QVariantList topLevelNodes;
 
-    for (auto topIt = fullhierarchyMap.begin(); topIt != fullhierarchyMap.end(); ++topIt) {
-        const auto& topPair = *topIt;
+    for (const auto& topPair : fullhierarchyMap) {
         QVariantList middleLevelNodes;
 
-        for (auto middleIt = topPair.second.begin(); middleIt != topPair.second.end(); ++middleIt) {
-            const auto& middlePair = *middleIt;
+        for (const auto& middlePair : topPair.second) {
             QVariantList bottomLevelNodes;
 
-            for (auto bottomIt = middlePair.second.begin(); bottomIt != middlePair.second.end(); ++bottomIt) {
-                const auto& bottomPair = *bottomIt;
-                //qDebug() << "Color: " << bottomHierarchyMap[bottomPair.first].first.name();
-                //qDebug() << "Bottom Name: " << bottomPair.first;
+            for (const auto& bottomPair : middlePair.second) {
                 bottomLevelNodes.append(createLeaf(bottomPair.first.first, bottomPair.first.second, bottomPair.second));
             }
-            //qDebug()<< "Color: " << middleHierarchyMap[middlePair.first].first.name();
-            //qDebug() << "Middle Name: " << middlePair.first;
             middleLevelNodes.append(createNode(middlePair.first.first, middlePair.first.second, bottomLevelNodes));
         }
-        //qDebug()<< "Color: " << topHierarchyMap[topPair.first].first.name();
-        //qDebug() << "Top Name: " << topPair.first;
         topLevelNodes.append(createNode(topPair.first.first, topPair.first.second, middleLevelNodes));
     }
 
@@ -433,7 +423,7 @@ QVariantList buildChartData(const std::map<std::pair<QString, QString>, std::map
 
 void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 {
-    auto topHierarchyDataset= _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+    auto topHierarchyDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
     auto middleHierarchyDataset = _settingsAction.getHierarchyMiddleClusterDataset().getCurrentDataset();
     auto bottomHierarchyDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
     auto mainPointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
@@ -445,24 +435,15 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
         auto bottomHierarchyClusters = mv::data().getDataset<Clusters>(bottomHierarchyDataset.getDatasetId());
         auto mainPoints = mv::data().getDataset<Points>(mainPointsDataset.getDatasetId());
 
-
-        bool valid = false;
-        valid = topHierarchyClusters->getParent() == mainPoints && middleHierarchyClusters->getParent() == mainPoints && bottomHierarchyClusters->getParent() == mainPoints;
-
+        bool valid = topHierarchyClusters->getParent() == mainPoints && middleHierarchyClusters->getParent() == mainPoints && bottomHierarchyClusters->getParent() == mainPoints;
 
         if (valid)
         {
-            
             std::map<int, PointClusterNames> pointClusterNamesMap;
             std::map<QString, std::pair<QColor, int>> topHierarchyMap;
             std::map<QString, std::pair<QColor, int>> middleHierarchyMap;
             std::map<QString, std::pair<QColor, int>> bottomHierarchyMap;
-            std::map<QString , std::pair<QString,QString>> hierarchyMap;
-            for (int i = 0; i < mainPoints->getNumPoints(); i++)
-            {
-                pointClusterNamesMap[i] = { "", "", "" };
-            }
-
+            std::map<QString, std::pair<QString, QString>> hierarchyMap;
 
             auto updateClusterNamesAndHierarchyMap = [&](const auto& clusters, auto updateFunc, auto& hierarchyMap) {
                 for (const auto& cluster : clusters->getClusters())
@@ -483,49 +464,20 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
                 }
                 };
 
-
             updateClusterNamesAndHierarchyMap(topHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.topHierarchy = name; }, topHierarchyMap);
             updateClusterNamesAndHierarchyMap(middleHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.middleHierarchy = name; }, middleHierarchyMap);
             updateClusterNamesAndHierarchyMap(bottomHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.bottomHierarchy = name; }, bottomHierarchyMap);
 
-            //print to verify topHierarchyMap, middleHierarchyMap and bottomHierarchyMap
-            //for (auto& [key, value] : topHierarchyMap)
-            //{
-            //    qDebug() << key << " : " << value.first.name();
-            //}
-            //for (auto& [key, value] : middleHierarchyMap)
-            //{
-            //    qDebug() << key << " : " << value.first.name();
-            //}
-            //for (auto& [key, value] : bottomHierarchyMap)
-            //{
-            //    qDebug() << key << " : " << value.first.name();
-            //}
-
-
-            for (auto clusters : bottomHierarchyClusters->getClusters())
-            {
-                auto clusterName = clusters.getName();
-                
-                hierarchyMap.emplace(clusterName, std::make_pair("", ""));
-            }
-
-            //iterate pointClusterNamesMap
             for (const auto& pair : pointClusterNamesMap) {
-                int key = pair.first;
-                PointClusterNames value = pair.second;
-                auto bottomString= value.bottomHierarchy;
-                auto middleString = value.middleHierarchy;
-                auto topString = value.topHierarchy;
+                auto bottomString = pair.second.bottomHierarchy;
+                auto middleString = pair.second.middleHierarchy;
+                auto topString = pair.second.topHierarchy;
 
                 hierarchyMap[bottomString].first = middleString;
                 hierarchyMap[bottomString].second = topString;
-
             }
 
-
-
-            std::map<std::pair<QString,QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>> finalHierarchyMap;
+            std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>> finalHierarchyMap;
 
             for (const auto& [bottom, middleTop] : hierarchyMap)
             {
@@ -537,22 +489,6 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 
                 finalHierarchyMap[topPair][middlePair][bottomPair] = bottomHierarchyMap[bottom].second;
             }
-            //print to verify finalHierarchyMap data
-            //for (auto& [top, middleBottom] : finalHierarchyMap)
-            //{
-            //    qDebug()<< "Top: " << top.first << " : " << top.second;
-            //    for (auto& [middle, bottom] : middleBottom)
-            //    {
-            //        qDebug() << "Middle: " << middle.first << " : " << middle.second;
-            //        for (auto& [bottom, value] : bottom)
-            //        {
-            //            qDebug() << "Bottom: " << bottom.first << " : " << bottom.second << " : " << value;
-            //        }
-            //    }
-            //}
-
-
-
 
             _dataForChart = buildChartData(finalHierarchyMap);
 
@@ -569,6 +505,7 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
     }
 
 }
+
 void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 {
 
