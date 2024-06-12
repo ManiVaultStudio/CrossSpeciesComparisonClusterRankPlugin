@@ -120,6 +120,11 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
         {
             //qDebug() << "Item selected in Population Pyramid";
+            if (!_pauseSelectionEvent)
+            {
+                emit _chartWidget->getCommunicationObject().qt_js_removeClusterSelectionHighlight("Remove");
+            }
+            
         };
     connect(&_embeddingDataset, &mv::Dataset<Points>::dataSelectionChanged, this, clusterSelectionFromPopulationPyramidDatasetChange);
 
@@ -637,8 +642,10 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
                 }
 
             }
+            _pauseSelectionEvent = true;
             pointsDataset->setSelectionIndices(selectedIndices);
             mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+            _pauseSelectionEvent = false;
         }
         else
         {

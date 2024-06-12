@@ -90,6 +90,7 @@ protected:
     //mv::Dataset<Clusters> _clusterDataset;    // Reference to the cluster dataset
     mv::Dataset<Points>   _embeddingDataset; // Reference to the low-dimensional t-SNE dataset
     //Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
+    bool _pauseSelectionEvent = false;
 };
 
 /**

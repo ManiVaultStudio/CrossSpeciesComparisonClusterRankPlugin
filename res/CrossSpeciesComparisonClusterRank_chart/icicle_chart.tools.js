@@ -22,7 +22,15 @@ function doALoadOfStuff() {
 
 }
 
+function removeRectHighlight(d) {
+    if (data != "") {
+        d3.selectAll('rect')
+            .style('stroke', '#000')
+            .style('stroke-width', 0.2);
+        selectedClusterContainer = [];
 
+    }
+}
 
 
 function drawChart(d) {
