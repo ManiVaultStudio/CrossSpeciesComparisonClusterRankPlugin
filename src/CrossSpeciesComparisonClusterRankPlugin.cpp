@@ -37,6 +37,13 @@ Q_PLUGIN_METADATA(IID "studio.manivault.CrossSpeciesComparisonClusterRankPlugin"
 
 using namespace mv;
 
+struct PointClusterNames
+{
+    QString topHierarchy;
+    QString middleHierarchy;
+    QString bottomHierarchy;
+};
+
 CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _chartWidget(nullptr),
@@ -107,6 +114,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
                 {
                     child->setGroupIndex(1);
                 }
+                computeHierarchy();
             }
         };
     connect(&_settingsAction.getMainPointsDataset(), &DatasetPickerAction::currentIndexChanged, this, mainPointsDatasetUpdate);
@@ -153,12 +161,32 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
                     }
                     
                 }
-
+                computeHierarchy();
             }
             //&_settingsAction.getTopHierarchyRelativeClusterCountInclusion()
    
         };
     connect(&_settingsAction.getHierarchyTopClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyTopClusterDatasetUpdate);
+
+    const auto hierarchyMiddleClusterDatasetUpdate = [this]() -> void
+        {
+            auto hierarchyMiddleClusterDataset = _settingsAction.getHierarchyMiddleClusterDataset().getCurrentDataset();
+            if (hierarchyMiddleClusterDataset.isValid())
+            {
+                computeHierarchy();
+            }
+     };
+     connect(&_settingsAction.getHierarchyMiddleClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyMiddleClusterDatasetUpdate);
+
+     const auto hierarchyBottomClusterDatasetUpdate = [this]() -> void
+         {
+             auto hierarchyBottomClusterDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+             if (hierarchyBottomClusterDataset.isValid())
+             {
+                 computeHierarchy();
+             }
+         };
+     connect(&_settingsAction.getHierarchyBottomClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyBottomClusterDatasetUpdate);
 
     const auto getTopHierarchyRelativeClusterCountInclusionUpdate = [this]() -> void {
         //auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
@@ -392,11 +420,95 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 
         if (valid)
         {
-            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Compute hierarchy";
-            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Top hierarchy clusters: " << topHierarchyClusters->getClusters().size();
-            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Middle hierarchy clusters: " << middleHierarchyClusters->getClusters().size();
-            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Bottom hierarchy clusters: " << bottomHierarchyClusters->getClusters().size();
-            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Main points: " << mainPoints->getPoints().size();
+            
+            std::map<int, PointClusterNames> pointClusterNamesMap;
+            std::map<QString, std::pair<QColor, int>> topHierarchyMap;
+            std::map<QString, std::pair<QColor, int>> middleHierarchyMap;
+            std::map<QString, std::pair<QColor, int>> bottomHierarchyMap;
+            std::map<QString , std::pair<QString,QString>> hierarchyMap;
+            for (int i = 0; i < mainPoints->getNumPoints(); i++)
+            {
+                pointClusterNamesMap[i] = { "", "", "" };
+            }
+
+
+            auto updateClusterNamesAndHierarchyMap = [&](const auto& clusters, auto updateFunc, auto& hierarchyMap) {
+                for (const auto& cluster : clusters->getClusters())
+                {
+                    auto clusterName = cluster.getName();
+                    auto clusterIndices = cluster.getIndices();
+                    for (auto index : clusterIndices)
+                    {
+                        updateFunc(pointClusterNamesMap[index], clusterName);
+                    }
+                    auto clusterColor = cluster.getColor();
+                   
+                    hierarchyMap.emplace(clusterName, std::make_pair(clusterColor, clusterIndices.size()));
+                }
+                };
+
+            updateClusterNamesAndHierarchyMap(topHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.topHierarchy = name; }, topHierarchyMap);
+            updateClusterNamesAndHierarchyMap(middleHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.middleHierarchy = name; }, middleHierarchyMap);
+            updateClusterNamesAndHierarchyMap(bottomHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.bottomHierarchy = name; }, bottomHierarchyMap);
+
+            for (auto clusters : bottomHierarchyClusters->getClusters())
+            {
+                auto clusterName = clusters.getName();
+                
+                hierarchyMap.emplace(clusterName, std::make_pair("", ""));
+            }
+
+            //iterate pointClusterNamesMap
+            for (const auto& pair : pointClusterNamesMap) {
+                int key = pair.first;
+                PointClusterNames value = pair.second;
+                auto bottomString= value.bottomHierarchy;
+                auto middleString = value.middleHierarchy;
+                auto topString = value.topHierarchy;
+
+                hierarchyMap[bottomString].first = middleString;
+                hierarchyMap[bottomString].second = topString;
+
+            }
+
+
+
+            std::map<QString, std::map<QString, std::map<QString, int>>> finalHierarchyMap;
+
+            for (const auto& [bottom, middleTop] : hierarchyMap)
+            {
+                auto middle = middleTop.first;
+                auto top = middleTop.second;
+                finalHierarchyMap[top][middle][bottom] = bottomHierarchyMap[bottom].second;
+            }
+
+            qDebug() << "(\"All\", \"white\", {";
+            for (const auto& topPair : finalHierarchyMap)
+            {
+                if (topPair.first != "") {
+                    qDebug() << "(\""+ topPair.first +"\","<< "\""+ topHierarchyMap[topPair.first].first.name() +"\", {";
+                    for (const auto& middlePair : topPair.second)
+                    {
+                        qDebug() << "(\"" + middlePair.first + "\"," << "\"" + middleHierarchyMap[middlePair.first].first.name() + "\", {";
+                        
+                        for (const auto& bottom : middlePair.second)
+                        {
+                            qDebug() << "(\"" +bottom.first + "\"," << "\"" + bottomHierarchyMap[bottom.first].first.name() + "\"," << bottom.second << "),";
+                        }
+                        qDebug() << "}),";
+                    }
+                    qDebug() << "}),";
+                }
+
+            }
+            qDebug() << "});";
+
+            QVariantList dataForChart;
+
+
+
+
+
             convertDataAndUpdateChart();
         }
         else
@@ -412,13 +524,10 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 }
 void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 {
-    //if (!_currentDataSet.isValid())
-       // return;
 
-    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
     _dropWidget->setShowDropIndicator(false);
     _currentDataSet;
-    QVariantList dataForChart = {
+    _dataForChart = {
     createNode("All", "white", {
         createNode("Non-Neuronal", "#7fffff", {
             createNode("Micro-PVM", "#94af97", {
@@ -520,55 +629,14 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
         })
     })
     };
-    //QVariantList dataForChart = {
-    //    QVariantMap{
-    //        {"name", "flare"},
-    //        {"color", "pink"},
-    //        {"children", QVariantList{
-    //            QVariantMap{
-    //                {"name", "analytics"},
-    //                {"color", "blue"},
-    //                {"children", QVariantList{
-    //                    QVariantMap{
-    //                        {"name", "cluster"},
-    //                        {"color", "green"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "AgglomerativeCluster"}, {"color", "red"}, {"value", 3938}},
-    //                            QVariantMap{{"name", "CommunityStructure"}, {"color", "orange"}, {"value", 3812}},
-    //                            QVariantMap{{"name", "HierarchicalCluster"}, {"color", "yellow"}, {"value", 6714}},
-    //                            QVariantMap{{"name", "MergeEdge"}, {"color", "purple"}, {"value", 743}},
-    //                        }},
-    //                    },
-    //                    QVariantMap{
-    //                        {"name", "graph"},
-    //                        {"color", "cyan"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "BetweennessCentrality"}, {"color", "magenta"}, {"value", 3534}},
-    //                            QVariantMap{{"name", "LinkDistance"}, {"color", "lime"}, {"value", 5731}},
-    //                            QVariantMap{{"name", "MaxFlowMinCut"}, {"color", "teal"}, {"value", 7840}},
-    //                            QVariantMap{{"name", "ShortestPaths"}, {"color", "maroon"}, {"value", 5914}},
-    //                            QVariantMap{{"name", "SpanningTree"}, {"color", "navy"}, {"value", 3416}},
-    //                        }},
-    //                    },
-    //                    QVariantMap{
-    //                        {"name", "optimization"},
-    //                        {"color", "olive"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "AspectRatioBanker"}, {"color", "#C0C0C0"}, {"value", 7074}},
-    //                        }},
-    //                    },
-    //                }},
-    //            },
-    //        }},
-    //    },
-    //};
+ 
 
-    QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(dataForChart));
+    QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(_dataForChart));
     QString jsonString = doc.toJson(QJsonDocument::Compact);
     
     if (jsonString!="")
     {
-       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::: Send data from Qt cpp to D3 js";
+       
         emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
     }
     
