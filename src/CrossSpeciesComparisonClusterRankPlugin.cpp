@@ -399,6 +399,38 @@ QVariantMap createLeaf(const QString& name, const QString& color, int value)
     return leaf;
 }
 
+
+QVariantList buildChartData(const std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>>& fullhierarchyMap) {
+    QVariantList chartData;
+    QVariantList topLevelNodes;
+
+    for (auto topIt = fullhierarchyMap.begin(); topIt != fullhierarchyMap.end(); ++topIt) {
+        const auto& topPair = *topIt;
+        QVariantList middleLevelNodes;
+
+        for (auto middleIt = topPair.second.begin(); middleIt != topPair.second.end(); ++middleIt) {
+            const auto& middlePair = *middleIt;
+            QVariantList bottomLevelNodes;
+
+            for (auto bottomIt = middlePair.second.begin(); bottomIt != middlePair.second.end(); ++bottomIt) {
+                const auto& bottomPair = *bottomIt;
+                //qDebug() << "Color: " << bottomHierarchyMap[bottomPair.first].first.name();
+                //qDebug() << "Bottom Name: " << bottomPair.first;
+                bottomLevelNodes.append(createLeaf(bottomPair.first.first, bottomPair.first.second, bottomPair.second));
+            }
+            //qDebug()<< "Color: " << middleHierarchyMap[middlePair.first].first.name();
+            //qDebug() << "Middle Name: " << middlePair.first;
+            middleLevelNodes.append(createNode(middlePair.first.first, middlePair.first.second, bottomLevelNodes));
+        }
+        //qDebug()<< "Color: " << topHierarchyMap[topPair.first].first.name();
+        //qDebug() << "Top Name: " << topPair.first;
+        topLevelNodes.append(createNode(topPair.first.first, topPair.first.second, middleLevelNodes));
+    }
+
+    chartData.append(createNode("All", "white", topLevelNodes));
+    return chartData;
+}
+
 void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 {
     auto topHierarchyDataset= _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
@@ -442,14 +474,34 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
                         updateFunc(pointClusterNamesMap[index], clusterName);
                     }
                     auto clusterColor = cluster.getColor();
-                   
-                    hierarchyMap.emplace(clusterName, std::make_pair(clusterColor, clusterIndices.size()));
+                    if (clusterColor.isValid()) {
+                        hierarchyMap.emplace(clusterName, std::make_pair(clusterColor.name(), clusterIndices.size()));
+                    }
+                    else {
+                        hierarchyMap.emplace(clusterName, std::make_pair("grey", clusterIndices.size()));
+                    }
                 }
                 };
+
 
             updateClusterNamesAndHierarchyMap(topHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.topHierarchy = name; }, topHierarchyMap);
             updateClusterNamesAndHierarchyMap(middleHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.middleHierarchy = name; }, middleHierarchyMap);
             updateClusterNamesAndHierarchyMap(bottomHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.bottomHierarchy = name; }, bottomHierarchyMap);
+
+            //print to verify topHierarchyMap, middleHierarchyMap and bottomHierarchyMap
+            //for (auto& [key, value] : topHierarchyMap)
+            //{
+            //    qDebug() << key << " : " << value.first.name();
+            //}
+            //for (auto& [key, value] : middleHierarchyMap)
+            //{
+            //    qDebug() << key << " : " << value.first.name();
+            //}
+            //for (auto& [key, value] : bottomHierarchyMap)
+            //{
+            //    qDebug() << key << " : " << value.first.name();
+            //}
+
 
             for (auto clusters : bottomHierarchyClusters->getClusters())
             {
@@ -473,45 +525,36 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
 
 
 
-            std::map<QString, std::map<QString, std::map<QString, int>>> finalHierarchyMap;
+            std::map<std::pair<QString,QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>> finalHierarchyMap;
 
             for (const auto& [bottom, middleTop] : hierarchyMap)
             {
                 auto middle = middleTop.first;
                 auto top = middleTop.second;
-                finalHierarchyMap[top][middle][bottom] = bottomHierarchyMap[bottom].second;
+                std::pair<QString, QString> topPair = std::make_pair(top, topHierarchyMap[top].first.name());
+                std::pair<QString, QString> middlePair = std::make_pair(middle, middleHierarchyMap[middle].first.name());
+                std::pair<QString, QString> bottomPair = std::make_pair(bottom, bottomHierarchyMap[bottom].first.name());
+
+                finalHierarchyMap[topPair][middlePair][bottomPair] = bottomHierarchyMap[bottom].second;
             }
-
-            qDebug() << "createNode(\"All\", \"white\", {";
-            for (auto topIt = finalHierarchyMap.begin(); topIt != finalHierarchyMap.end(); ++topIt)
-            {
-                const auto& topPair = *topIt;
-                if (topPair.first != "") {
-                    qDebug() << "(\"" + topPair.first + "\"," << "\"" + topHierarchyMap[topPair.first].first.name() + "\", {";
-                    for (auto middleIt = topPair.second.begin(); middleIt != topPair.second.end(); ++middleIt)
-                    {
-                        const auto& middlePair = *middleIt;
-                        qDebug() << "createNode(\"" + middlePair.first + "\"," << "\"" + middleHierarchyMap[middlePair.first].first.name() + "\", {";
-
-                        for (auto bottomIt = middlePair.second.begin(); bottomIt != middlePair.second.end(); ++bottomIt)
-                        {
-                            const auto& bottom = *bottomIt;
-                            qDebug() << "createNode(\"" + bottom.first + "\"," << "\"" + bottomHierarchyMap[bottom.first].first.name() + "\"," << bottom.second << ((std::next(bottomIt) == middlePair.second.end()) ? "" : ",");
-                        }
-                        qDebug() << "})" << ((std::next(middleIt) == topPair.second.end()) ? "" : ",");
-                    }
-                    qDebug() << "})" << ((std::next(topIt) == finalHierarchyMap.end()) ? "" : ",");
-                }
-            }
-            qDebug() << "});";
-
-
-
-            QVariantList dataForChart;
+            //print to verify finalHierarchyMap data
+            //for (auto& [top, middleBottom] : finalHierarchyMap)
+            //{
+            //    qDebug()<< "Top: " << top.first << " : " << top.second;
+            //    for (auto& [middle, bottom] : middleBottom)
+            //    {
+            //        qDebug() << "Middle: " << middle.first << " : " << middle.second;
+            //        for (auto& [bottom, value] : bottom)
+            //        {
+            //            qDebug() << "Bottom: " << bottom.first << " : " << bottom.second << " : " << value;
+            //        }
+            //    }
+            //}
 
 
 
 
+            _dataForChart = buildChartData(finalHierarchyMap);
 
             convertDataAndUpdateChart();
         }
@@ -522,7 +565,7 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
     }
     else
     {
-        qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Not all datasets are valid";
+        //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Not all datasets are valid";
     }
 
 }
@@ -530,8 +573,8 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 {
 
     _dropWidget->setShowDropIndicator(false);
-    _currentDataSet;
-    _dataForChart = {
+
+    QVariantList dataForChart1 = {
     createNode("All", "white", {
         createNode("Non-Neuronal", "#7fffff", {
             createNode("Micro-PVM", "#94af97", {
@@ -633,16 +676,37 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
         })
     })
     };
- 
-
-    QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(_dataForChart));
-    QString jsonString = doc.toJson(QJsonDocument::Compact);
-    
-    if (jsonString!="")
+    if (dataForChart1 == _dataForChart)
     {
-       
-        emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
+        qDebug() << "Data is the same";
     }
+    else
+    {
+        qDebug() << "Data is different";
+    }
+    if (!dataForChart1.isEmpty())
+    {
+        QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(_dataForChart));
+        {
+            QString jsonString = doc.toJson(QJsonDocument::Compact);
+            
+            if (!jsonString.isEmpty() && jsonString != "")
+            {
+
+                emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
+            }
+            else
+            {
+                qDebug() << "Json string is empty";
+            }
+        }
+
+    }
+    else
+    {
+        qDebug() << "Data is empty";
+    }
+
     
 }
 
