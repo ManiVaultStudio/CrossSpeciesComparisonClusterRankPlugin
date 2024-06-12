@@ -574,117 +574,117 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 
     _dropWidget->setShowDropIndicator(false);
 
-    QVariantList dataForChart1 = {
-    createNode("All", "white", {
-        createNode("Non-Neuronal", "#7fffff", {
-            createNode("Micro-PVM", "#94af97", {
-                createLeaf("Microglia/PVM", "#94af97", 20566)
-            }),
-            createNode("VLMC", "#697255", {
-                createLeaf("No Agreement", "#C0C0C0", 133072),
-                createLeaf("VLMC", "#697255", 7968),
-                createLeaf("Unknown", "#C0C0C0", 50)
-            }),
-            createNode("Endo", "#8d6c62", {
-                createLeaf("Endo", "#8d6c62", 9123)
-            }),
-            createNode("Oligo", "#53776c", {
-                createLeaf("Oligo_1", "#88a19a", 63386),
-                createLeaf("Oligo_2", "#3a544c", 90484)
-            }),
-            createNode("Astro", "#665c47", {
-                createLeaf("Astro_1", "#958f80", 5583),
-                createLeaf("Astro_2", "#484132", 60795)
-            }),
-            createNode("OPC", "#374a45", {
-                createLeaf("OPC", "#374a45", 28445)
-            }),
-        }),
-        createNode("GABAergic", "#ff7f7f", {
-            createNode("Sst Chodl", "#b1b10c", {
-                createLeaf("Sst Chodl", "#b1b10c", 5133)
-            }),
-            createNode("Sst", "#ff9900", {
-                createLeaf("Sst_1", "#ffb84f", 11487),
-                createLeaf("Sst_2", "#ffb342", 12334),
-                createLeaf("Sst_3", "#ffb03c", 74776),
-                createLeaf("Sst_4", "#ffae36", 15488),
-                createLeaf("Sst_5", "#ffac30", 6547),
-                createLeaf("Sst_6", "#ffa92a", 9323),
-                createLeaf("Sst_7", "#ffa724", 1607)
-            }),
-            createNode("Pvalb", "#d93137", {
-                createLeaf("Pvalb_1", "#e47175", 143140),
-                createLeaf("Pvalb_2", "#e2686c", 10764)
-            }),
-            createNode("Chandelier", "#f641a8", {
-                createLeaf("Chandelier", "#f641a8", 16199)
-            }),
-            createNode("Vip", "#a45fbf", {
-                createLeaf("Vip_1", "#c091d3", 15946),
-                createLeaf("Vip_2", "#bd8cd1", 42074),
-                createLeaf("Vip_3", "#ba87cf", 26303),
-                createLeaf("Vip_4", "#b883cd", 10681)
+    //QVariantList dataForChart1 = {
+    //createNode("All", "white", {
+    //    createNode("Non-Neuronal", "#7fffff", {
+    //        createNode("Micro-PVM", "#94af97", {
+    //            createLeaf("Microglia/PVM", "#94af97", 20566)
+    //        }),
+    //        createNode("VLMC", "#697255", {
+    //            createLeaf("No Agreement", "#C0C0C0", 133072),
+    //            createLeaf("VLMC", "#697255", 7968),
+    //            createLeaf("Unknown", "#C0C0C0", 50)
+    //        }),
+    //        createNode("Endo", "#8d6c62", {
+    //            createLeaf("Endo", "#8d6c62", 9123)
+    //        }),
+    //        createNode("Oligo", "#53776c", {
+    //            createLeaf("Oligo_1", "#88a19a", 63386),
+    //            createLeaf("Oligo_2", "#3a544c", 90484)
+    //        }),
+    //        createNode("Astro", "#665c47", {
+    //            createLeaf("Astro_1", "#958f80", 5583),
+    //            createLeaf("Astro_2", "#484132", 60795)
+    //        }),
+    //        createNode("OPC", "#374a45", {
+    //            createLeaf("OPC", "#374a45", 28445)
+    //        }),
+    //    }),
+    //    createNode("GABAergic", "#ff7f7f", {
+    //        createNode("Sst Chodl", "#b1b10c", {
+    //            createLeaf("Sst Chodl", "#b1b10c", 5133)
+    //        }),
+    //        createNode("Sst", "#ff9900", {
+    //            createLeaf("Sst_1", "#ffb84f", 11487),
+    //            createLeaf("Sst_2", "#ffb342", 12334),
+    //            createLeaf("Sst_3", "#ffb03c", 74776),
+    //            createLeaf("Sst_4", "#ffae36", 15488),
+    //            createLeaf("Sst_5", "#ffac30", 6547),
+    //            createLeaf("Sst_6", "#ffa92a", 9323),
+    //            createLeaf("Sst_7", "#ffa724", 1607)
+    //        }),
+    //        createNode("Pvalb", "#d93137", {
+    //            createLeaf("Pvalb_1", "#e47175", 143140),
+    //            createLeaf("Pvalb_2", "#e2686c", 10764)
+    //        }),
+    //        createNode("Chandelier", "#f641a8", {
+    //            createLeaf("Chandelier", "#f641a8", 16199)
+    //        }),
+    //        createNode("Vip", "#a45fbf", {
+    //            createLeaf("Vip_1", "#c091d3", 15946),
+    //            createLeaf("Vip_2", "#bd8cd1", 42074),
+    //            createLeaf("Vip_3", "#ba87cf", 26303),
+    //            createLeaf("Vip_4", "#b883cd", 10681)
 
-            }),
-            createNode("Sncg", "#df70ff", {
-                createLeaf("Sncg_1", "#e99cff", 7342),
-                createLeaf("Sncg_2", "#e691ff", 4291),
-                createLeaf("Sncg_3", "#e386ff", 4459),
-                createLeaf("Sncg_4", "#e17bff", 13487),
-            }),
-            createNode("Lamp5", "#da808c", {
-                createLeaf("Lamp5_1", "#e5a7b0", 4557),
-                createLeaf("Lamp5_2", "#e097a1", 40821),
-                createLeaf("Lamp5_3", "#dc8793", 22716),
-                createLeaf("Lamp5_4", "#cd7883", 6217),
-                createLeaf("Lamp5_5", "#b36972", 16354)
-            })
-        }),
-        createNode("Glutamatergic", "#bfff7f", {
-            createNode("L6 IT", "#a19922", {
-                createLeaf("L6 IT_1", "#beb867", 24546),
-                createLeaf("L6 IT_2", "#716c18", 136534),
-                createLeaf("L6 IT_3", "#ffd700", 17004)
-            }),
-            createNode("L2/3 IT", "#b1ec30", {
-                createLeaf("L2/3 IT", "#b1ec30", 486221)
-            }),
-            createNode("L5 ET", "#0d5b78", {
-                createLeaf("L5 ET_1", "#588ea2", 52299),
-                createLeaf("L5 ET_2", "#0d5b78", 313)
+    //        }),
+    //        createNode("Sncg", "#df70ff", {
+    //            createLeaf("Sncg_1", "#e99cff", 7342),
+    //            createLeaf("Sncg_2", "#e691ff", 4291),
+    //            createLeaf("Sncg_3", "#e386ff", 4459),
+    //            createLeaf("Sncg_4", "#e17bff", 13487),
+    //        }),
+    //        createNode("Lamp5", "#da808c", {
+    //            createLeaf("Lamp5_1", "#e5a7b0", 4557),
+    //            createLeaf("Lamp5_2", "#e097a1", 40821),
+    //            createLeaf("Lamp5_3", "#dc8793", 22716),
+    //            createLeaf("Lamp5_4", "#cd7883", 6217),
+    //            createLeaf("Lamp5_5", "#b36972", 16354)
+    //        })
+    //    }),
+    //    createNode("Glutamatergic", "#bfff7f", {
+    //        createNode("L6 IT", "#a19922", {
+    //            createLeaf("L6 IT_1", "#beb867", 24546),
+    //            createLeaf("L6 IT_2", "#716c18", 136534),
+    //            createLeaf("L6 IT_3", "#ffd700", 17004)
+    //        }),
+    //        createNode("L2/3 IT", "#b1ec30", {
+    //            createLeaf("L2/3 IT", "#b1ec30", 486221)
+    //        }),
+    //        createNode("L5 ET", "#0d5b78", {
+    //            createLeaf("L5 ET_1", "#588ea2", 52299),
+    //            createLeaf("L5 ET_2", "#0d5b78", 313)
 
-            }),
-            createNode("L5 IT", "#50b2ad", {
-                createLeaf("L5 IT_1", "#86cac6", 316754),
-                createLeaf("L5 IT_2", "#67bcb7", 191918),
-                createLeaf("L5 IT_3", "#beb867", 18024)
-            }),
-            createNode("L6b", "#7044aa", {
-                createLeaf("L6b", "#7044aa", 61326)
-            }),
-            createNode("L6 CT", "#2d8cb8", {
-                createLeaf("L6 CT_1", "#6eb0ce", 77283),
-                createLeaf("L6 CT_2", "#4d9ec3", 119532)
-            }),
-            createNode("L6 IT Car3", "#5100ff", {
-                createLeaf("MC", "#5100ff", 7074)
-            }),
-            createNode("L5/6 NP", "#3e9e64", {
-                createLeaf("L5/6 NP", "#3e9e64", 47918)
-            })
-        })
-    })
-    };
-    if (dataForChart1 == _dataForChart)
-    {
-        qDebug() << "Data is the same";
-    }
-    else
-    {
-        qDebug() << "Data is different";
-    }
-    if (!dataForChart1.isEmpty())
+    //        }),
+    //        createNode("L5 IT", "#50b2ad", {
+    //            createLeaf("L5 IT_1", "#86cac6", 316754),
+    //            createLeaf("L5 IT_2", "#67bcb7", 191918),
+    //            createLeaf("L5 IT_3", "#beb867", 18024)
+    //        }),
+    //        createNode("L6b", "#7044aa", {
+    //            createLeaf("L6b", "#7044aa", 61326)
+    //        }),
+    //        createNode("L6 CT", "#2d8cb8", {
+    //            createLeaf("L6 CT_1", "#6eb0ce", 77283),
+    //            createLeaf("L6 CT_2", "#4d9ec3", 119532)
+    //        }),
+    //        createNode("L6 IT Car3", "#5100ff", {
+    //            createLeaf("MC", "#5100ff", 7074)
+    //        }),
+    //        createNode("L5/6 NP", "#3e9e64", {
+    //            createLeaf("L5/6 NP", "#3e9e64", 47918)
+    //        })
+    //    })
+    //})
+    //};
+    //if (dataForChart1 == _dataForChart)
+    //{
+    //    qDebug() << "Data is the same";
+    //}
+    //else
+    //{
+    //    qDebug() << "Data is different";
+    //}
+    if (!_dataForChart.isEmpty())
     {
         QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(_dataForChart));
         {
