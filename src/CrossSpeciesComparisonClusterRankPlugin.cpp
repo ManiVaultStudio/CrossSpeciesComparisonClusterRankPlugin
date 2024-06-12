@@ -482,26 +482,30 @@ void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
                 finalHierarchyMap[top][middle][bottom] = bottomHierarchyMap[bottom].second;
             }
 
-            qDebug() << "(\"All\", \"white\", {";
-            for (const auto& topPair : finalHierarchyMap)
+            qDebug() << "createNode(\"All\", \"white\", {";
+            for (auto topIt = finalHierarchyMap.begin(); topIt != finalHierarchyMap.end(); ++topIt)
             {
+                const auto& topPair = *topIt;
                 if (topPair.first != "") {
-                    qDebug() << "(\""+ topPair.first +"\","<< "\""+ topHierarchyMap[topPair.first].first.name() +"\", {";
-                    for (const auto& middlePair : topPair.second)
+                    qDebug() << "(\"" + topPair.first + "\"," << "\"" + topHierarchyMap[topPair.first].first.name() + "\", {";
+                    for (auto middleIt = topPair.second.begin(); middleIt != topPair.second.end(); ++middleIt)
                     {
-                        qDebug() << "(\"" + middlePair.first + "\"," << "\"" + middleHierarchyMap[middlePair.first].first.name() + "\", {";
-                        
-                        for (const auto& bottom : middlePair.second)
-                        {
-                            qDebug() << "(\"" +bottom.first + "\"," << "\"" + bottomHierarchyMap[bottom.first].first.name() + "\"," << bottom.second << "),";
-                        }
-                        qDebug() << "}),";
-                    }
-                    qDebug() << "}),";
-                }
+                        const auto& middlePair = *middleIt;
+                        qDebug() << "createNode(\"" + middlePair.first + "\"," << "\"" + middleHierarchyMap[middlePair.first].first.name() + "\", {";
 
+                        for (auto bottomIt = middlePair.second.begin(); bottomIt != middlePair.second.end(); ++bottomIt)
+                        {
+                            const auto& bottom = *bottomIt;
+                            qDebug() << "createNode(\"" + bottom.first + "\"," << "\"" + bottomHierarchyMap[bottom.first].first.name() + "\"," << bottom.second << ((std::next(bottomIt) == middlePair.second.end()) ? "" : ",");
+                        }
+                        qDebug() << "})" << ((std::next(middleIt) == topPair.second.end()) ? "" : ",");
+                    }
+                    qDebug() << "})" << ((std::next(topIt) == finalHierarchyMap.end()) ? "" : ",");
+                }
             }
             qDebug() << "});";
+
+
 
             QVariantList dataForChart;
 
