@@ -61,6 +61,7 @@ public:
 public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
+    void computeHierarchy();
 
 
 private:

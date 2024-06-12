@@ -329,9 +329,9 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
         return dropRegions;
         });
-    convertDataAndUpdateChart();
+    computeHierarchy();
     // update data when data set changed
-    connect(&_currentDataSet, &Dataset<Points>::dataChanged, this, &CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart);
+    connect(&_currentDataSet, &Dataset<Points>::dataChanged, this, &CrossSpeciesComparisonClusterRankPlugin::computeHierarchy);
 
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
@@ -348,7 +348,7 @@ void CrossSpeciesComparisonClusterRankPlugin::loadData(const mv::Datasets& datas
 
     //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::loadData: Load data set from ManiVault core";
 
-    // Load the first dataset, changes to _currentDataSet are connected with convertDataAndUpdateChart
+
     _currentDataSet = datasets.first();
     events().notifyDatasetDataChanged(_currentDataSet);
 }
@@ -371,6 +371,45 @@ QVariantMap createLeaf(const QString& name, const QString& color, int value)
     return leaf;
 }
 
+void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
+{
+    auto topHierarchyDataset= _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+    auto middleHierarchyDataset = _settingsAction.getHierarchyMiddleClusterDataset().getCurrentDataset();
+    auto bottomHierarchyDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+    auto mainPointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
+
+    if (topHierarchyDataset.isValid() && middleHierarchyDataset.isValid() && bottomHierarchyDataset.isValid() && mainPointsDataset.isValid())
+    {
+        auto topHierarchyClusters = mv::data().getDataset<Clusters>(topHierarchyDataset.getDatasetId());
+        auto middleHierarchyClusters = mv::data().getDataset<Clusters>(middleHierarchyDataset.getDatasetId());
+        auto bottomHierarchyClusters = mv::data().getDataset<Clusters>(bottomHierarchyDataset.getDatasetId());
+        auto mainPoints = mv::data().getDataset<Points>(mainPointsDataset.getDatasetId());
+
+
+        bool valid = false;
+        valid = topHierarchyClusters->getParent() == mainPoints && middleHierarchyClusters->getParent() == mainPoints && bottomHierarchyClusters->getParent() == mainPoints;
+
+
+        if (valid)
+        {
+            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Compute hierarchy";
+            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Top hierarchy clusters: " << topHierarchyClusters->getClusters().size();
+            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Middle hierarchy clusters: " << middleHierarchyClusters->getClusters().size();
+            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Bottom hierarchy clusters: " << bottomHierarchyClusters->getClusters().size();
+            //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Main points: " << mainPoints->getPoints().size();
+            convertDataAndUpdateChart();
+        }
+        else
+        {
+            qDebug() << "top, middle and bottom hierarchy datasets are not children of main points dataset";
+        }
+    }
+    else
+    {
+        qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Not all datasets are valid";
+    }
+
+}
 void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 {
     //if (!_currentDataSet.isValid())
@@ -529,7 +568,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
     
     if (jsonString!="")
     {
-       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
+       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::: Send data from Qt cpp to D3 js";
         emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
     }
     
