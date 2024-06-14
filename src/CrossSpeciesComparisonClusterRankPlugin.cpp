@@ -37,13 +37,19 @@ Q_PLUGIN_METADATA(IID "studio.manivault.CrossSpeciesComparisonClusterRankPlugin"
 
 using namespace mv;
 
+struct PointClusterNames
+{
+    QString topHierarchy;
+    QString middleHierarchy;
+    QString bottomHierarchy;
+};
+
 CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _chartWidget(nullptr),
     _dropWidget(nullptr),
     _currentDataSet(nullptr),
-    _settingsAction(*this),
-    _toolbarAction(this, "Toolbar")
+    _settingsAction(*this)
 {
 }
 
@@ -61,33 +67,243 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     _chartWidget = new ChartWidget(this);
     _chartWidget->setPage(":CrossSpeciesComparisonClusterRank_chart/icicle_chart.html", "qrc:/CrossSpeciesComparisonClusterRank_chart/");
 
-    // Add widget to layout
-    //auto settingslayout = new QHBoxLayout();
-
-    //settingslayout->addWidget(_settingsAction.getOptionSelectionAction().createWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createLabelWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getReferenceTreeDataset().createWidget(&getWidget()));
-    //settingslayout->addWidget(_settingsAction.getUpdateButtonForGeneFiltering().createWidget(&getWidget()));
    
-    _toolbarAction.addAction(&_settingsAction.getReferenceTreeDataset(),3);
-    _toolbarAction.addAction(&_settingsAction.getTopNGenesFilter(),2);
-    //_toolbarAction.addAction(&_settingsAction.getTreeSimilarity(),2);
-    _toolbarAction.addAction(&_settingsAction.getUpdateButtonForGeneFiltering(),1);
+    auto mainLayout = new QVBoxLayout();
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-    layout->addWidget(_toolbarAction.createWidget(&getWidget()));
+    auto mainOptionsLayout = new QHBoxLayout();
+    mainOptionsLayout->setSpacing(0);
+    mainOptionsLayout->setContentsMargins(0, 0, 0, 0);
+    auto extraOptionsGroup = new VerticalGroupAction(this, "Settings");
 
-    //layout->addLayout(settingslayout);
-
-    layout->addWidget(_chartWidget,1);
-
-    // Apply the layout
-    getWidget().setLayout(layout);
-
-
-
+    extraOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyTopClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getHierarchyBottomClusterDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
+    extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
+    extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
+    extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     
+    auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
+    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
+    mainOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
+
+    mainOptionsLayout->addWidget(mainOptionsGroup->createWidget(&getWidget()), 2);
+    mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
+
+    mainLayout->addLayout(mainOptionsLayout);
+    mainLayout->addWidget(_chartWidget, 1);
+
+    getWidget().setLayout(mainLayout);
+   
+
+    const auto mainPointsDatasetUpdate = [this]() -> void
+        {
+            _currentDataSet = _settingsAction.getMainPointsDataset().getCurrentDataset();
+            if (_currentDataSet.isValid())
+            {
+                auto children = _currentDataSet->getChildren();
+                for (auto child : children)
+                {
+                    child->setGroupIndex(1);
+                }
+                computeHierarchy();
+            }
+        };
+    connect(&_settingsAction.getMainPointsDataset(), &DatasetPickerAction::currentIndexChanged, this, mainPointsDatasetUpdate);
+
+    const auto embeddingDatasetUpdate = [this]() -> void
+        {
+            _embeddingDataset = _settingsAction.getEmbeddingDataset().getCurrentDataset();
+        };
+    connect(&_settingsAction.getEmbeddingDataset(), &DatasetPickerAction::currentIndexChanged, this, embeddingDatasetUpdate);
+
+    const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
+        {
+            //qDebug() << "Item selected in Population Pyramid";
+            if (!_pauseSelectionEvent)
+            {
+                emit _chartWidget->getCommunicationObject().qt_js_removeClusterSelectionHighlight("Remove");
+            }
+            
+        };
+    connect(&_embeddingDataset, &mv::Dataset<Points>::dataSelectionChanged, this, clusterSelectionFromPopulationPyramidDatasetChange);
+
+    const auto hierarchyTopClusterDatasetUpdate = [this]() -> void
+        {
+            auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+            QStringList Options;
+            if (hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid())
+            {
+                if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+                {
+                    auto TopClusterFull= mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+                    for (auto cluster : TopClusterFull->getClusters())
+                    {
+                        
+                        auto clusterName = cluster.getName();
+                        if (clusterName!="")
+                        {
+                            Options.append(clusterName);
+                        }                        
+                    }
+                    if (!Options.isEmpty())
+                    {
+                        _settingsAction.getTopHierarchyRelativeClusterCountInclusion().setOptions(Options);
+                        _settingsAction.getTopHierarchyRelativeClusterCountInclusion().setSelectedOptions(Options);
+                    }
+                    
+                }
+                computeHierarchy();
+            }
+            //&_settingsAction.getTopHierarchyRelativeClusterCountInclusion()
+   
+        };
+    connect(&_settingsAction.getHierarchyTopClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyTopClusterDatasetUpdate);
+
+    const auto hierarchyMiddleClusterDatasetUpdate = [this]() -> void
+        {
+            auto hierarchyMiddleClusterDataset = _settingsAction.getHierarchyMiddleClusterDataset().getCurrentDataset();
+            if (hierarchyMiddleClusterDataset.isValid())
+            {
+                computeHierarchy();
+            }
+     };
+     connect(&_settingsAction.getHierarchyMiddleClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyMiddleClusterDatasetUpdate);
+
+     const auto hierarchyBottomClusterDatasetUpdate = [this]() -> void
+         {
+             auto hierarchyBottomClusterDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+             if (hierarchyBottomClusterDataset.isValid())
+             {
+                 computeHierarchy();
+             }
+         };
+     connect(&_settingsAction.getHierarchyBottomClusterDataset(), &DatasetPickerAction::currentIndexChanged, this, hierarchyBottomClusterDatasetUpdate);
+
+    const auto getTopHierarchyRelativeClusterCountInclusionUpdate = [this]() -> void {
+        //auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+        //auto options = _settingsAction.getTopHierarchyRelativeClusterCountInclusion().getSelectedOptions();
+        //if (hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid())
+        //{
+        //    if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+        //    {
+        //        auto TopClusterFull = mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+        //        for (auto cluster : TopClusterFull->getClusters())
+        //        {
+
+        //            auto clusterName = cluster.getName();
+        //            if (options.contains(clusterName))
+        //            {
+        //                int clusterIndices = cluster.getIndices().size();
+        //                _relativeCellcount = _relativeCellcount + clusterIndices;
+        //            }
+
+        //        }
+
+        //    }
+
+        //}
+        };
+    connect(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion(), &OptionsAction::selectedOptionsChanged, this, getTopHierarchyRelativeClusterCountInclusionUpdate);
+
+    const auto getCreatePointSelectTreeUpdate = [this]() -> void
+        {
+            
+            auto clusterDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+            auto pointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
+            //auto speciesDataset= _settingsAction.getSpeciesNamesDataset().getCurrentDataset();
+            std::vector<std::uint32_t> selectedIndices= pointsDataset->getSelectionIndices();
+
+            auto hierarchyTopClusterDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
 
 
+            auto options = _settingsAction.getTopHierarchyRelativeClusterCountInclusion().getSelectedOptions();
+
+
+            int relativeCellcount = 0;
+            if (clusterDataset.isValid() && pointsDataset.isValid() && hierarchyTopClusterDataset.isValid() && _currentDataSet.isValid() )
+            {
+                if (hierarchyTopClusterDataset->getParent() == _currentDataSet)
+                {
+                    auto TopClusterFull = mv::data().getDataset<Clusters>(hierarchyTopClusterDataset.getDatasetId());
+                    for (auto cluster : TopClusterFull->getClusters())
+                    {
+
+                        auto clusterName = cluster.getName();
+                        if (options.contains(clusterName))
+                        {
+                            int clusterIndices = cluster.getIndices().size();
+                            relativeCellcount = relativeCellcount + clusterIndices;
+                        }
+
+                    }
+
+                }
+
+            }
+           
+
+            if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size() > 0)
+            {
+
+
+                auto speciesDataset = mv::data().getDataset<Clusters>(_settingsAction.getSpeciesNamesDataset().getCurrentDataset().getDatasetId());
+                std::map<QString, int> speciesSelectedIndicesCounter;
+                auto speciesData = speciesDataset->getClusters();
+                for (auto species : speciesData)
+                {
+                    auto speciesNameKey = species.getName();
+                    int speciescellCountValue = 0;
+                    auto indices = species.getIndices();
+                    speciescellCountValue = std::count_if(selectedIndices.begin(), selectedIndices.end(), [&](const auto& element) {
+                        return std::find(indices.begin(), indices.end(), element) != indices.end();
+                        });
+                    if (relativeCellcount != 0)
+                    {
+                        speciescellCountValue = (speciescellCountValue) / relativeCellcount;
+                    }
+                    speciesSelectedIndicesCounter.insert({ speciesNameKey, speciescellCountValue });
+                }
+
+                if (speciesSelectedIndicesCounter.size() > 0)
+                {
+                    // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishSelection: Send selection to core";
+                    QJsonObject valueStringReference = createJsonTree(speciesSelectedIndicesCounter);
+                    //print speciesSelectedIndicesCounter
+                    /*
+                    qDebug() << "*******************";
+                    int i = 1;
+                    for (auto& [key, value] : speciesSelectedIndicesCounter)
+                    {
+                        qDebug() << i<< key << " : " << value;
+                        i++;
+                    }
+                    qDebug() << "*******************";
+                    */
+
+                    auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+                    mainTreeDataset->setTreeData(valueStringReference);
+
+                    events().notifyDatasetDataChanged(mainTreeDataset);
+                    _settingsAction.getGeneNamesConnection().setString("");
+                }
+
+            }
+            else
+            {
+                qDebug() << "Datasets not valid";
+            }
+
+        };
+    connect(&_settingsAction.getCreatePointSelectTree(), &TriggerAction::triggered, this, getCreatePointSelectTreeUpdate);
 
 
     // Instantiate new drop widget: See CrossSpeciesComparisonClusterRank for details
@@ -141,9 +357,9 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
         return dropRegions;
         });
-    convertDataAndUpdateChart();
+    computeHierarchy();
     // update data when data set changed
-    connect(&_currentDataSet, &Dataset<Points>::dataChanged, this, &CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart);
+    connect(&_currentDataSet, &Dataset<Points>::dataChanged, this, &CrossSpeciesComparisonClusterRankPlugin::computeHierarchy);
 
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
@@ -160,7 +376,7 @@ void CrossSpeciesComparisonClusterRankPlugin::loadData(const mv::Datasets& datas
 
     //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::loadData: Load data set from ManiVault core";
 
-    // Load the first dataset, changes to _currentDataSet are connected with convertDataAndUpdateChart
+
     _currentDataSet = datasets.first();
     events().notifyDatasetDataChanged(_currentDataSet);
 }
@@ -183,167 +399,251 @@ QVariantMap createLeaf(const QString& name, const QString& color, int value)
     return leaf;
 }
 
+QVariantList buildChartData(const std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>>& fullhierarchyMap) {
+    QVariantList chartData;
+    QVariantList topLevelNodes;
+
+    for (const auto& topPair : fullhierarchyMap) {
+        QVariantList middleLevelNodes;
+
+        for (const auto& middlePair : topPair.second) {
+            QVariantList bottomLevelNodes;
+
+            for (const auto& bottomPair : middlePair.second) {
+                bottomLevelNodes.append(createLeaf(bottomPair.first.first, bottomPair.first.second, bottomPair.second));
+            }
+            middleLevelNodes.append(createNode(middlePair.first.first, middlePair.first.second, bottomLevelNodes));
+        }
+        topLevelNodes.append(createNode(topPair.first.first, topPair.first.second, middleLevelNodes));
+    }
+
+    chartData.append(createNode("All", "white", topLevelNodes));
+    return chartData;
+}
+
+void CrossSpeciesComparisonClusterRankPlugin::computeHierarchy()
+{
+    auto topHierarchyDataset = _settingsAction.getHierarchyTopClusterDataset().getCurrentDataset();
+    auto middleHierarchyDataset = _settingsAction.getHierarchyMiddleClusterDataset().getCurrentDataset();
+    auto bottomHierarchyDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+    auto mainPointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
+
+    if (topHierarchyDataset.isValid() && middleHierarchyDataset.isValid() && bottomHierarchyDataset.isValid() && mainPointsDataset.isValid())
+    {
+        auto topHierarchyClusters = mv::data().getDataset<Clusters>(topHierarchyDataset.getDatasetId());
+        auto middleHierarchyClusters = mv::data().getDataset<Clusters>(middleHierarchyDataset.getDatasetId());
+        auto bottomHierarchyClusters = mv::data().getDataset<Clusters>(bottomHierarchyDataset.getDatasetId());
+        auto mainPoints = mv::data().getDataset<Points>(mainPointsDataset.getDatasetId());
+
+        bool valid = topHierarchyClusters->getParent() == mainPoints && middleHierarchyClusters->getParent() == mainPoints && bottomHierarchyClusters->getParent() == mainPoints;
+
+        if (valid)
+        {
+            std::map<int, PointClusterNames> pointClusterNamesMap;
+            std::map<QString, std::pair<QColor, int>> topHierarchyMap;
+            std::map<QString, std::pair<QColor, int>> middleHierarchyMap;
+            std::map<QString, std::pair<QColor, int>> bottomHierarchyMap;
+            std::map<QString, std::pair<QString, QString>> hierarchyMap;
+
+            auto updateClusterNamesAndHierarchyMap = [&](const auto& clusters, auto updateFunc, auto& hierarchyMap) {
+                for (const auto& cluster : clusters->getClusters())
+                {
+                    auto clusterName = cluster.getName();
+                    auto clusterIndices = cluster.getIndices();
+                    for (auto index : clusterIndices)
+                    {
+                        updateFunc(pointClusterNamesMap[index], clusterName);
+                    }
+                    auto clusterColor = cluster.getColor();
+                    if (clusterColor.isValid()) {
+                        hierarchyMap.emplace(clusterName, std::make_pair(clusterColor.name(), clusterIndices.size()));
+                    }
+                    else {
+                        hierarchyMap.emplace(clusterName, std::make_pair("grey", clusterIndices.size()));
+                    }
+                }
+                };
+
+            updateClusterNamesAndHierarchyMap(topHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.topHierarchy = name; }, topHierarchyMap);
+            updateClusterNamesAndHierarchyMap(middleHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.middleHierarchy = name; }, middleHierarchyMap);
+            updateClusterNamesAndHierarchyMap(bottomHierarchyClusters, [](PointClusterNames& names, const QString& name) { names.bottomHierarchy = name; }, bottomHierarchyMap);
+
+            for (const auto& pair : pointClusterNamesMap) {
+                auto bottomString = pair.second.bottomHierarchy;
+                auto middleString = pair.second.middleHierarchy;
+                auto topString = pair.second.topHierarchy;
+
+                hierarchyMap[bottomString].first = middleString;
+                hierarchyMap[bottomString].second = topString;
+            }
+
+            std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, std::map<std::pair<QString, QString>, int>>> finalHierarchyMap;
+
+            for (const auto& [bottom, middleTop] : hierarchyMap)
+            {
+                auto middle = middleTop.first;
+                auto top = middleTop.second;
+                std::pair<QString, QString> topPair = std::make_pair(top, topHierarchyMap[top].first.name());
+                std::pair<QString, QString> middlePair = std::make_pair(middle, middleHierarchyMap[middle].first.name());
+                std::pair<QString, QString> bottomPair = std::make_pair(bottom, bottomHierarchyMap[bottom].first.name());
+
+                finalHierarchyMap[topPair][middlePair][bottomPair] = bottomHierarchyMap[bottom].second;
+            }
+
+            _dataForChart = buildChartData(finalHierarchyMap);
+
+            convertDataAndUpdateChart();
+        }
+        else
+        {
+            qDebug() << "top, middle and bottom hierarchy datasets are not children of main points dataset";
+        }
+    }
+    else
+    {
+        //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::computeHierarchy: Not all datasets are valid";
+    }
+
+}
+
 void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
 {
-    //if (!_currentDataSet.isValid())
-       // return;
 
-    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Prepare payload";
     _dropWidget->setShowDropIndicator(false);
-    _currentDataSet;
-    QVariantList dataForChart = {
-    createNode("All", "white", {
-        createNode("Non-Neuronal", "#7fffff", {
-            createNode("Micro-PVM", "#94af97", {
-                createLeaf("Microglia/PVM", "#94af97", 20566)
-            }),
-            createNode("VLMC", "#697255", {
-                createLeaf("No Agreement", "silver", 133072),
-                createLeaf("VLMC", "#697255", 7968),
-                createLeaf("Unknown", "silver", 50)
-            }),
-            createNode("Endo", "#8d6c62", {
-                createLeaf("Endo", "#8d6c62", 9123)
-            }),
-            createNode("Oligo", "#53776c", {
-                createLeaf("Oligo_1", "#88a19a", 63386),
-                createLeaf("Oligo_2", "#3a544c", 90484)
-            }),
-            createNode("Astro", "#665c47", {
-                createLeaf("Astro_1", "#958f80", 5583),
-                createLeaf("Astro_2", "#484132", 60795)
-            }),
-            createNode("OPC", "#374a45", {
-                createLeaf("OPC", "#374a45", 28445)
-            }),
-        }),
-        createNode("GABAergic", "#ff7f7f", {
-            createNode("Sst Chodl", "#b1b10c", {
-                createLeaf("Sst Chodl", "#b1b10c", 5133)
-            }),
-            createNode("Sst", "#ff9900", {
-                createLeaf("Sst_1", "#ffb84f", 11487),
-                createLeaf("Sst_2", "#ffb342", 12334),
-                createLeaf("Sst_3", "#ffb03c", 74776),
-                createLeaf("Sst_4", "#ffae36", 15488),
-                createLeaf("Sst_5", "#ffac30", 6547),
-                createLeaf("Sst_6", "#ffa92a", 9323),
-                createLeaf("Sst_7", "#ffa724", 1607)
-            }),
-            createNode("Pvalb", "#d93137", {
-                createLeaf("Pvalb_1", "#e47175", 143140),
-                createLeaf("Pvalb_2", "#e2686c", 10764)
-            }),
-            createNode("Chandelier", "#f641a8", {
-                createLeaf("Chandelier", "#f641a8", 16199)
-            }),
-            createNode("Vip", "#a45fbf", {
-                createLeaf("Vip_1", "#c091d3", 15946),
-                createLeaf("Vip_2", "#bd8cd1", 42074),
-                createLeaf("Vip_3", "#ba87cf", 26303),
-                createLeaf("Vip_4", "#b883cd", 10681)
 
-            }),
-            createNode("Sncg", "#df70ff", {
-                createLeaf("Sncg_1", "#e99cff", 7342),
-                createLeaf("Sncg_2", "#e691ff", 4291),
-                createLeaf("Sncg_3", "#e386ff", 4459),
-                createLeaf("Sncg_4", "#e17bff", 13487),
-            }),
-            createNode("Lamp5", "#da808c", {
-                createLeaf("Lamp5_1", "#e5a7b0", 4557),
-                createLeaf("Lamp5_2", "#e097a1", 40821),
-                createLeaf("Lamp5_3", "#dc8793", 22716),
-                createLeaf("Lamp5_4", "#cd7883", 6217),
-                createLeaf("Lamp5_5", "#b36972", 16354)
-            })
-        }),
-        createNode("Glutamatergic", "#bfff7f", {
-            createNode("L6 IT", "#a19922", {
-                createLeaf("L6 IT_1", "#beb867", 24546),
-                createLeaf("L6 IT_2", "#716c18", 136534),
-                createLeaf("L6 IT_3", "#ffd700", 17004)
-            }),
-            createNode("L2/3 IT", "#b1ec30", {
-                createLeaf("L2/3 IT", "#b1ec30", 486221)
-            }),
-            createNode("L5 ET", "#0d5b78", {
-                createLeaf("L5 ET_1", "#588ea2", 52299),
-                createLeaf("L5 ET_2", "#0d5b78", 313)
+    //QVariantList dataForChart1 = {
+    //createNode("All", "white", {
+    //    createNode("Non-Neuronal", "#7fffff", {
+    //        createNode("Micro-PVM", "#94af97", {
+    //            createLeaf("Microglia/PVM", "#94af97", 20566)
+    //        }),
+    //        createNode("VLMC", "#697255", {
+    //            createLeaf("No Agreement", "#C0C0C0", 133072),
+    //            createLeaf("VLMC", "#697255", 7968),
+    //            createLeaf("Unknown", "#C0C0C0", 50)
+    //        }),
+    //        createNode("Endo", "#8d6c62", {
+    //            createLeaf("Endo", "#8d6c62", 9123)
+    //        }),
+    //        createNode("Oligo", "#53776c", {
+    //            createLeaf("Oligo_1", "#88a19a", 63386),
+    //            createLeaf("Oligo_2", "#3a544c", 90484)
+    //        }),
+    //        createNode("Astro", "#665c47", {
+    //            createLeaf("Astro_1", "#958f80", 5583),
+    //            createLeaf("Astro_2", "#484132", 60795)
+    //        }),
+    //        createNode("OPC", "#374a45", {
+    //            createLeaf("OPC", "#374a45", 28445)
+    //        }),
+    //    }),
+    //    createNode("GABAergic", "#ff7f7f", {
+    //        createNode("Sst Chodl", "#b1b10c", {
+    //            createLeaf("Sst Chodl", "#b1b10c", 5133)
+    //        }),
+    //        createNode("Sst", "#ff9900", {
+    //            createLeaf("Sst_1", "#ffb84f", 11487),
+    //            createLeaf("Sst_2", "#ffb342", 12334),
+    //            createLeaf("Sst_3", "#ffb03c", 74776),
+    //            createLeaf("Sst_4", "#ffae36", 15488),
+    //            createLeaf("Sst_5", "#ffac30", 6547),
+    //            createLeaf("Sst_6", "#ffa92a", 9323),
+    //            createLeaf("Sst_7", "#ffa724", 1607)
+    //        }),
+    //        createNode("Pvalb", "#d93137", {
+    //            createLeaf("Pvalb_1", "#e47175", 143140),
+    //            createLeaf("Pvalb_2", "#e2686c", 10764)
+    //        }),
+    //        createNode("Chandelier", "#f641a8", {
+    //            createLeaf("Chandelier", "#f641a8", 16199)
+    //        }),
+    //        createNode("Vip", "#a45fbf", {
+    //            createLeaf("Vip_1", "#c091d3", 15946),
+    //            createLeaf("Vip_2", "#bd8cd1", 42074),
+    //            createLeaf("Vip_3", "#ba87cf", 26303),
+    //            createLeaf("Vip_4", "#b883cd", 10681)
 
-            }),
-            createNode("L5 IT", "#50b2ad", {
-                createLeaf("L5 IT_1", "#86cac6", 316754),
-                createLeaf("L5 IT_2", "#67bcb7", 191918),
-                createLeaf("L5 IT_3", "#beb867", 18024)
-            }),
-            createNode("L6b", "#7044aa", {
-                createLeaf("L6b", "#7044aa", 61326)
-            }),
-            createNode("L6 CT", "#2d8cb8", {
-                createLeaf("L6 CT_1", "#6eb0ce", 77283),
-                createLeaf("L6 CT_2", "#4d9ec3", 119532)
-            }),
-            createNode("L6 IT Car3", "#5100ff", {
-                createLeaf("MC", "#5100ff", 7074)
-            }),
-            createNode("L5/6 NP", "#3e9e64", {
-                createLeaf("L5/6 NP", "#3e9e64", 47918)
-            })
-        })
-    })
-    };
-    //QVariantList dataForChart = {
-    //    QVariantMap{
-    //        {"name", "flare"},
-    //        {"color", "pink"},
-    //        {"children", QVariantList{
-    //            QVariantMap{
-    //                {"name", "analytics"},
-    //                {"color", "blue"},
-    //                {"children", QVariantList{
-    //                    QVariantMap{
-    //                        {"name", "cluster"},
-    //                        {"color", "green"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "AgglomerativeCluster"}, {"color", "red"}, {"value", 3938}},
-    //                            QVariantMap{{"name", "CommunityStructure"}, {"color", "orange"}, {"value", 3812}},
-    //                            QVariantMap{{"name", "HierarchicalCluster"}, {"color", "yellow"}, {"value", 6714}},
-    //                            QVariantMap{{"name", "MergeEdge"}, {"color", "purple"}, {"value", 743}},
-    //                        }},
-    //                    },
-    //                    QVariantMap{
-    //                        {"name", "graph"},
-    //                        {"color", "cyan"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "BetweennessCentrality"}, {"color", "magenta"}, {"value", 3534}},
-    //                            QVariantMap{{"name", "LinkDistance"}, {"color", "lime"}, {"value", 5731}},
-    //                            QVariantMap{{"name", "MaxFlowMinCut"}, {"color", "teal"}, {"value", 7840}},
-    //                            QVariantMap{{"name", "ShortestPaths"}, {"color", "maroon"}, {"value", 5914}},
-    //                            QVariantMap{{"name", "SpanningTree"}, {"color", "navy"}, {"value", 3416}},
-    //                        }},
-    //                    },
-    //                    QVariantMap{
-    //                        {"name", "optimization"},
-    //                        {"color", "olive"},
-    //                        {"children", QVariantList{
-    //                            QVariantMap{{"name", "AspectRatioBanker"}, {"color", "silver"}, {"value", 7074}},
-    //                        }},
-    //                    },
-    //                }},
-    //            },
-    //        }},
-    //    },
+    //        }),
+    //        createNode("Sncg", "#df70ff", {
+    //            createLeaf("Sncg_1", "#e99cff", 7342),
+    //            createLeaf("Sncg_2", "#e691ff", 4291),
+    //            createLeaf("Sncg_3", "#e386ff", 4459),
+    //            createLeaf("Sncg_4", "#e17bff", 13487),
+    //        }),
+    //        createNode("Lamp5", "#da808c", {
+    //            createLeaf("Lamp5_1", "#e5a7b0", 4557),
+    //            createLeaf("Lamp5_2", "#e097a1", 40821),
+    //            createLeaf("Lamp5_3", "#dc8793", 22716),
+    //            createLeaf("Lamp5_4", "#cd7883", 6217),
+    //            createLeaf("Lamp5_5", "#b36972", 16354)
+    //        })
+    //    }),
+    //    createNode("Glutamatergic", "#bfff7f", {
+    //        createNode("L6 IT", "#a19922", {
+    //            createLeaf("L6 IT_1", "#beb867", 24546),
+    //            createLeaf("L6 IT_2", "#716c18", 136534),
+    //            createLeaf("L6 IT_3", "#ffd700", 17004)
+    //        }),
+    //        createNode("L2/3 IT", "#b1ec30", {
+    //            createLeaf("L2/3 IT", "#b1ec30", 486221)
+    //        }),
+    //        createNode("L5 ET", "#0d5b78", {
+    //            createLeaf("L5 ET_1", "#588ea2", 52299),
+    //            createLeaf("L5 ET_2", "#0d5b78", 313)
+
+    //        }),
+    //        createNode("L5 IT", "#50b2ad", {
+    //            createLeaf("L5 IT_1", "#86cac6", 316754),
+    //            createLeaf("L5 IT_2", "#67bcb7", 191918),
+    //            createLeaf("L5 IT_3", "#beb867", 18024)
+    //        }),
+    //        createNode("L6b", "#7044aa", {
+    //            createLeaf("L6b", "#7044aa", 61326)
+    //        }),
+    //        createNode("L6 CT", "#2d8cb8", {
+    //            createLeaf("L6 CT_1", "#6eb0ce", 77283),
+    //            createLeaf("L6 CT_2", "#4d9ec3", 119532)
+    //        }),
+    //        createNode("L6 IT Car3", "#5100ff", {
+    //            createLeaf("MC", "#5100ff", 7074)
+    //        }),
+    //        createNode("L5/6 NP", "#3e9e64", {
+    //            createLeaf("L5/6 NP", "#3e9e64", 47918)
+    //        })
+    //    })
+    //})
     //};
-
-    QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(dataForChart));
-    QString jsonString = doc.toJson(QJsonDocument::Compact);
-    
-    if (jsonString!="")
+    //if (dataForChart1 == _dataForChart)
+    //{
+    //    qDebug() << "Data is the same";
+    //}
+    //else
+    //{
+    //    qDebug() << "Data is different";
+    //}
+    if (!_dataForChart.isEmpty())
     {
-       // qDebug() << "CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart: Send data from Qt cpp to D3 js";
-        emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
+        QJsonDocument doc = QJsonDocument::fromVariant(QVariant::fromValue(_dataForChart));
+        {
+            QString jsonString = doc.toJson(QJsonDocument::Compact);
+            
+            if (!jsonString.isEmpty() && jsonString != "")
+            {
+
+                emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
+            }
+            else
+            {
+                qDebug() << "Json string is empty";
+            }
+        }
+
     }
+    else
+    {
+        qDebug() << "Data is empty";
+    }
+
     
 }
 
@@ -454,8 +754,10 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
                 }
 
             }
+            _pauseSelectionEvent = true;
             pointsDataset->setSelectionIndices(selectedIndices);
             mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+            _pauseSelectionEvent = false;
         }
         else
         {
@@ -469,13 +771,9 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
         qDebug() << "Datasets not valid";
     }
     
-    if (!_mainTreeDataset.isValid())
-    {
-        _mainTreeDataset = mv::data().createDataset("CrossSpeciesComparisonTree", "SelectionTreeDataset");
-        events().notifyDatasetAdded(_mainTreeDataset);
-    }
+
     
-    if (_mainTreeDataset.isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
+    if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
     {
         
         
@@ -510,10 +808,17 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
             qDebug() << "*******************";
             */
 
-            _mainTreeDataset->setTreeData(valueStringReference);
-            events().notifyDatasetDataChanged(_mainTreeDataset);
+            auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+            mainTreeDataset->setTreeData(valueStringReference);
+
+            events().notifyDatasetDataChanged(mainTreeDataset);
+            _settingsAction.getGeneNamesConnection().setString("");
         }
 
+    }
+    else
+    {
+        qDebug() << "Datasets not valid";
     }
 
 

@@ -10,6 +10,7 @@ try {
 
         // register signals
         QtBridge.qt_js_setDataAndPlotInJS.connect(function () { drawChart(arguments[0]); });   // drawChart is defined in icicle_chart.tools.js
+        QtBridge.qt_js_removeClusterSelectionHighlight.connect(function () { removeRectHighlight(arguments[0]); });   // drawChart is defined in icicle_chart.tools.js
 
         // confirm successful connection
         isQtAvailable = true;

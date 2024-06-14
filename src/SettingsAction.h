@@ -86,12 +86,22 @@ public: // Action getters
     DatasetPickerAction& getHierarchyMiddleClusterDataset() { return _hierarchyMiddleClusterDataset; }
     DatasetPickerAction& getHierarchyBottomClusterDataset() { return _hierarchyBottomClusterDataset; }
     VariantAction& getSelectedClusterNames() { return _selectedClusterNamesVariant; }
-    VariantAction& getFilteredGeneNames() { return _filteredGeneNamesVariant; }
-    TriggerAction& getUpdateButtonForGeneFiltering() { return _updateButtonForGeneFiltering; }
+    //VariantAction& getFilteredGeneNames() { return _filteredGeneNamesVariant; }
+    //TriggerAction& getUpdateButtonForGeneFiltering() { return _updateButtonForGeneFiltering; }
     DatasetPickerAction& getSpeciesNamesDataset() { return _speciesNamesDataset; }
-    IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
+    DatasetPickerAction& getFilterTreeDataset() { return _filterTreeDataset; }
+    //IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
     DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
+    StringAction& getGeneNamesConnection() { return _geneNamesConnection; }
+    TriggerAction& getCreatePointSelectTree() { return _createPointSelectTree; }
+    DatasetPickerAction& getEmbeddingDataset() { return _embeddingDataset; }
+    OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
+
+
+
+
+
     //DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
@@ -121,12 +131,17 @@ protected:
     DatasetPickerAction    _hierarchyMiddleClusterDataset;
     DatasetPickerAction    _hierarchyBottomClusterDataset;
     VariantAction           _selectedClusterNamesVariant;
-    VariantAction           _filteredGeneNamesVariant;
-    TriggerAction          _updateButtonForGeneFiltering;
+    //VariantAction           _filteredGeneNamesVariant;
+    //TriggerAction          _updateButtonForGeneFiltering;
     DatasetPickerAction    _speciesNamesDataset;
-    std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
-    IntegralAction          _topNGenesFilter;
+    DatasetPickerAction    _filterTreeDataset;
+    //std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
+    //IntegralAction          _topNGenesFilter;
     OptionSelectionAction         _optionSelectionAction;
     DatasetPickerAction    _referenceTreeDataset;
+    StringAction           _geneNamesConnection;
     //DecimalAction          _treeSimilarity;
+    TriggerAction         _createPointSelectTree;
+    DatasetPickerAction    _embeddingDataset;
+    OptionsAction           _topHierarchyRelativeClusterCountInclusion;
 };

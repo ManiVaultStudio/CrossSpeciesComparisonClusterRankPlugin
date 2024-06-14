@@ -61,6 +61,7 @@ public:
 public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
+    void computeHierarchy();
 
 
 private:
@@ -87,8 +88,11 @@ protected:
     SettingsAction      _settingsAction;    // Settings action for the plugin
     DropWidget*             _dropWidget;        // Widget for drag and drop behavior
     mv::Dataset<Points>   _currentDataSet;    // Reference to currently shown data set
-    HorizontalToolbarAction     _toolbarAction;    // Toolbar action that is shown in the main window
-    Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
+    //mv::Dataset<Clusters> _clusterDataset;    // Reference to the cluster dataset
+    mv::Dataset<Points>   _embeddingDataset; // Reference to the low-dimensional t-SNE dataset
+    //Dataset<CrossSpeciesComparisonTree>    _mainTreeDataset; // Reference to the main tree dataset
+    bool _pauseSelectionEvent = false;
+    QVariantList _dataForChart;
 };
 
 /**
