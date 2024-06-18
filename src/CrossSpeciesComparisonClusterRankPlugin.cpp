@@ -94,7 +94,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
-    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
+    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("database"));
     mainOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
     mainOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
