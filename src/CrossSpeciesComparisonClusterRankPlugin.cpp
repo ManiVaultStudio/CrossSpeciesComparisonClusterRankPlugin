@@ -86,16 +86,20 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
     extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
     extraOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    //extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-    extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+    //extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    //extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+    extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
     
-    auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
+    //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
+    auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
-    mainOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
+    mainOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
 
-    mainOptionsLayout->addWidget(mainOptionsGroup->createWidget(&getWidget()), 2);
+    mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
     mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
 
     mainLayout->addLayout(mainOptionsLayout);
