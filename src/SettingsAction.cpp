@@ -666,13 +666,15 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection(this, "Gene Names Connection"),
     _createPointSelectTree(this, "Create Point Select Tree"),
     _embeddingDataset(this, "Embedding Dataset"),
-    _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion")
+    _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion"),
+    _statusChangedAction(this, "Status Changed")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
     _embeddingDataset.setSerializationName("CSCCR:EmbeddingDataset");
     _topHierarchyRelativeClusterCountInclusion.setSerializationName("CSCCR:TopHierarchyRelativeClusterCountInclusion");
+    _statusChangedAction.setSerializationName("CSCCR:StatusChangedAction");
     _hierarchyTopClusterDataset.setSerializationName("CSCCR:HierarchyTopClusterDataset");
     _hierarchyMiddleClusterDataset.setSerializationName("CSCCR:HierarchyMiddleClusterDataset");
     _hierarchyBottomClusterDataset.setSerializationName("CSCCR:HierarchyBottomClusterDataset");
@@ -691,6 +693,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _mainPointsDataset.setToolTip("Main Points Dataset");
     _embeddingDataset.setToolTip("Embedding Dataset");
     _topHierarchyRelativeClusterCountInclusion.setToolTip("Top Hierarchy Relative Cluster Count Inclusion");
+    _statusChangedAction.setToolTip("Status Changed");
     _hierarchyTopClusterDataset.setToolTip("Hierarchy Top Cluster Dataset");
     _hierarchyMiddleClusterDataset.setToolTip("Hierarchy Middle Cluster Dataset");
     _hierarchyBottomClusterDataset.setToolTip("Hierarchy Bottom Cluster Dataset");
@@ -921,6 +924,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _embeddingDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topHierarchyRelativeClusterCountInclusion.setDefaultWidgetFlags(OptionsAction::ComboBox || OptionsAction::File);
+    _statusChangedAction.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyBottomClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
@@ -973,6 +977,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _mainPointsDataset.fromParentVariantMap(variantMap);
     _embeddingDataset.fromParentVariantMap(variantMap);
     _topHierarchyRelativeClusterCountInclusion.fromParentVariantMap(variantMap);
+    _statusChangedAction.fromParentVariantMap(variantMap);
     _hierarchyTopClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyBottomClusterDataset.fromParentVariantMap(variantMap);
@@ -995,6 +1000,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _mainPointsDataset.insertIntoVariantMap(variantMap);
     _embeddingDataset.insertIntoVariantMap(variantMap);
     _topHierarchyRelativeClusterCountInclusion.insertIntoVariantMap(variantMap);
+    _statusChangedAction.insertIntoVariantMap(variantMap);
     _hierarchyTopClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyBottomClusterDataset.insertIntoVariantMap(variantMap);

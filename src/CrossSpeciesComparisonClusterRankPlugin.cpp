@@ -91,6 +91,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     //extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
     //extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
+    extraOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
+
     
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
@@ -135,6 +137,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             if (!_pauseSelectionEvent)
             {
                 emit _chartWidget->getCommunicationObject().qt_js_removeClusterSelectionHighlight("Remove");
+                _settingsAction.getStatusChangedAction().setString("M");
             }
             
         };

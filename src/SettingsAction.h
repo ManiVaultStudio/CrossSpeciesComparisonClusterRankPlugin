@@ -97,7 +97,7 @@ public: // Action getters
     TriggerAction& getCreatePointSelectTree() { return _createPointSelectTree; }
     DatasetPickerAction& getEmbeddingDataset() { return _embeddingDataset; }
     OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
-
+    StringAction& getStatusChangedAction() { return _statusChangedAction; }
 
 
 
@@ -144,4 +144,5 @@ protected:
     TriggerAction         _createPointSelectTree;
     DatasetPickerAction    _embeddingDataset;
     OptionsAction           _topHierarchyRelativeClusterCountInclusion;
+    StringAction           _statusChangedAction;
 };
