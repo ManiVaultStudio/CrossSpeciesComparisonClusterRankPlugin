@@ -86,16 +86,22 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
     extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
     extraOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    //extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-    extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
-    
-    auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
-    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("play"));
-    mainOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
+    //extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    //extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+    extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
+    extraOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
 
-    mainOptionsLayout->addWidget(mainOptionsGroup->createWidget(&getWidget()), 2);
+    
+    //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
+    auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
+    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("database"));
+    mainOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+
+    mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
     mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
 
     mainLayout->addLayout(mainOptionsLayout);
@@ -131,6 +137,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             if (!_pauseSelectionEvent)
             {
                 emit _chartWidget->getCommunicationObject().qt_js_removeClusterSelectionHighlight("Remove");
+                _settingsAction.getStatusChangedAction().setString("M");
             }
             
         };
@@ -364,7 +371,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
 
-
+    _settingsAction.getStatusChangedAction().setString("M");
 
 }
 

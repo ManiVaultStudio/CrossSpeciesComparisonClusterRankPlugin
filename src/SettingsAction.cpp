@@ -155,7 +155,7 @@ QString SettingsAction::createJsonTreeFromNewick(QString tree, std::vector<QStri
             i++;
         }
         else if (newick[i] == ')') {
-            jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"width\": 1\n}";
+            jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"branchLength\": 1.0,\n\"width\": 1\n}";
             i++;
         }
         else if (newick[i] == ';') {
@@ -177,7 +177,7 @@ QString SettingsAction::createJsonTreeFromNewick(QString tree, std::vector<QStri
                     }
                 }
                 std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
-                jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
+                jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"branchLength\": 1.0,\n\"mean\": 0.0,\n\"name\": \"" << species << "\"\n}";
                 i += skip;
             }
         }
@@ -278,61 +278,6 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
         //add gene and newick to newickTrees
         newickTrees.insert(std::make_pair(gene, QString::fromStdString(newick)));
 
-        /*
-        int i = 0;
-        newick += ';';
-        std::string jsonString = "";
-        std::stringstream jsonStream;
-        while (i < newick.size()) {
-            if (newick[i] == '(') {
-                jsonStream << "{\n\"children\": [";
-                i++;
-            }
-            else if (newick[i] == ',') {
-                jsonStream << ",";
-                i++;
-            }
-            else if (newick[i] == ')') {
-                jsonStream << "],\n\"id\": 1,\n\"score\": 1,\n\"width\": 1\n}";
-                i++;
-            }
-            else if (newick[i] == ';') {
-                break;
-            }
-            else {
-                if (isdigit(newick[i])) {
-                    int skip = 1;
-                    std::string num = "";
-                    for (int j = i; j < newick.size(); j++) {
-                        if (isdigit(newick[j])) {
-                            continue;
-                        }
-                        else {
-                            num = newick.substr(i, j - i);
-
-                            skip = j - i;
-                            break;
-                        }
-                    }
-
-
-                    std::string species = leafnames[(std::stoi(num) - 1)].toStdString();
-                    jsonStream << "{\n\"color\": \"#000000\",\n\"hastrait\": true,\n\"iscollapsed\": false,\n\"name\": \"" << species << "\"\n}";
-                    i += skip;
-                }
-            }
-        }
-
-        jsonString = jsonStream.str();
-
-        nlohmann::json json = nlohmann::json::parse(jsonString);
-        std::string jsonStr = json.dump(4);
-
-        QJsonObject valueStringReference = QJsonDocument::fromJson(QString::fromStdString(jsonStr).toUtf8()).object();
-
-        QString completedString = QJsonDocument(valueStringReference).toJson(QJsonDocument::Compact);
-
-        */
         delete[] distmat;
         delete[] merge;
         delete[] height;
@@ -721,13 +666,15 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection(this, "Gene Names Connection"),
     _createPointSelectTree(this, "Create Point Select Tree"),
     _embeddingDataset(this, "Embedding Dataset"),
-    _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion")
+    _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion"),
+    _statusChangedAction(this, "Status Changed")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
     _mainPointsDataset.setSerializationName("CSCCR:MainPointsDataset");
     _embeddingDataset.setSerializationName("CSCCR:EmbeddingDataset");
     _topHierarchyRelativeClusterCountInclusion.setSerializationName("CSCCR:TopHierarchyRelativeClusterCountInclusion");
+    _statusChangedAction.setSerializationName("CSCCR:StatusChangedAction");
     _hierarchyTopClusterDataset.setSerializationName("CSCCR:HierarchyTopClusterDataset");
     _hierarchyMiddleClusterDataset.setSerializationName("CSCCR:HierarchyMiddleClusterDataset");
     _hierarchyBottomClusterDataset.setSerializationName("CSCCR:HierarchyBottomClusterDataset");
@@ -746,6 +693,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _mainPointsDataset.setToolTip("Main Points Dataset");
     _embeddingDataset.setToolTip("Embedding Dataset");
     _topHierarchyRelativeClusterCountInclusion.setToolTip("Top Hierarchy Relative Cluster Count Inclusion");
+    _statusChangedAction.setToolTip("Status Changed");
     _hierarchyTopClusterDataset.setToolTip("Hierarchy Top Cluster Dataset");
     _hierarchyMiddleClusterDataset.setToolTip("Hierarchy Middle Cluster Dataset");
     _hierarchyBottomClusterDataset.setToolTip("Hierarchy Bottom Cluster Dataset");
@@ -976,6 +924,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _embeddingDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topHierarchyRelativeClusterCountInclusion.setDefaultWidgetFlags(OptionsAction::ComboBox || OptionsAction::File);
+    _statusChangedAction.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _hierarchyTopClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyMiddleClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _hierarchyBottomClusterDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
@@ -989,7 +938,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
-
+    _statusChangedAction.setString("M");
 }
 
 
@@ -1028,6 +977,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _mainPointsDataset.fromParentVariantMap(variantMap);
     _embeddingDataset.fromParentVariantMap(variantMap);
     _topHierarchyRelativeClusterCountInclusion.fromParentVariantMap(variantMap);
+    _statusChangedAction.fromParentVariantMap(variantMap);
     _hierarchyTopClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.fromParentVariantMap(variantMap);
     _hierarchyBottomClusterDataset.fromParentVariantMap(variantMap);
@@ -1050,6 +1000,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _mainPointsDataset.insertIntoVariantMap(variantMap);
     _embeddingDataset.insertIntoVariantMap(variantMap);
     _topHierarchyRelativeClusterCountInclusion.insertIntoVariantMap(variantMap);
+    _statusChangedAction.insertIntoVariantMap(variantMap);
     _hierarchyTopClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyMiddleClusterDataset.insertIntoVariantMap(variantMap);
     _hierarchyBottomClusterDataset.insertIntoVariantMap(variantMap);
