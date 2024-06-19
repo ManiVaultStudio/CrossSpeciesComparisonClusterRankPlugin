@@ -371,7 +371,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
 
-
+    _settingsAction.getStatusChangedAction().setString("M");
 
 }
 

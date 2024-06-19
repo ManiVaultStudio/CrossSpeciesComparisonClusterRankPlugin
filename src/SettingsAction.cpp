@@ -938,7 +938,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
-
+    _statusChangedAction.setString("M");
 }
 
 
