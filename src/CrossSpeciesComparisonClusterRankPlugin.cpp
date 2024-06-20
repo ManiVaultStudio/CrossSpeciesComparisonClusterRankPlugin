@@ -764,6 +764,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
             _pauseSelectionEvent = true;
             pointsDataset->setSelectionIndices(selectedIndices);
             mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+            _settingsAction.getStatusChangedAction().setString("M");
             _pauseSelectionEvent = false;
         }
         else
