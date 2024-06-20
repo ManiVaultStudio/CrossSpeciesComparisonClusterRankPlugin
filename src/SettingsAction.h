@@ -98,7 +98,7 @@ public: // Action getters
     DatasetPickerAction& getEmbeddingDataset() { return _embeddingDataset; }
     OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
     StringAction& getStatusChangedAction() { return _statusChangedAction; }
-
+    TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
 
 
 
@@ -145,4 +145,5 @@ protected:
     DatasetPickerAction    _embeddingDataset;
     OptionsAction           _topHierarchyRelativeClusterCountInclusion;
     StringAction           _statusChangedAction;
+    TriggerAction            _removeTableSelection;
 };
