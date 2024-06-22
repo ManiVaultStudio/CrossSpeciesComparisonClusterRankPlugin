@@ -81,27 +81,41 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
-    extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
-    //extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-    //extraOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
-    //extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
-    extraOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
     extraOptionsGroup->addAction(&_settingsAction.getRemoveTableSelection());
     extraOptionsGroup->addAction(&_settingsAction.getFilterEditTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
-    auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
-    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("database"));
-    
+    auto mainOptionsGroup = new VerticalGroupAction(this, "Linking Options");
+    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("link"));
+
+    auto dividerActionMain1 = new QAction("Dataset");
+    dividerActionMain1->setEnabled(false);
+    auto wrappedDividerActionMain1 = new mv::gui::WidgetAction(nullptr /* parent */, "datasetParameters");
+    wrappedDividerActionMain1->setText(dividerActionMain1->text());
+    wrappedDividerActionMain1->setEnabled(dividerActionMain1->isEnabled());
+    mainOptionsGroup->addAction(wrappedDividerActionMain1);
+
     mainOptionsGroup->addAction(&_settingsAction.getHierarchyTopClusterDataset());
     mainOptionsGroup->addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
     mainOptionsGroup->addAction(&_settingsAction.getHierarchyBottomClusterDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getMainPointsDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getEmbeddingDataset());
+
+    auto dividerActionMain2 = new QAction("Additional");
+    dividerActionMain2->setEnabled(false);
+    auto wrappedDividerActionMain2 = new mv::gui::WidgetAction(nullptr /* parent */, "additionalParameters");
+    wrappedDividerActionMain2->setText(dividerActionMain2->text());
+    wrappedDividerActionMain2->setEnabled(dividerActionMain2->isEnabled());
+    mainOptionsGroup->addAction(wrappedDividerActionMain2);
+
+
+    mainOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
+    mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
+   
 
     mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
     mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
