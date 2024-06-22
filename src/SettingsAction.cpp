@@ -222,7 +222,7 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
     }
 
     QStandardItemModel* model = new QStandardItemModel();
-    QStringList initColumnNames = { "ID",  "Variance", "Newick tree","Top "+QString::number(n)+" Appearances","Tree Similarity with Reference Tree", "Standard Deviation","Grand Mean","Gene Apearance Species"};
+    QStringList initColumnNames = { "ID",  "Variance", "Newick tree","Top "+QString::number(n)+" Appearances","Similarity with Reference Tree", "Standard Deviation","Grand Mean","Gene Apearance Species"};
     model->setHorizontalHeaderLabels(initColumnNames);
     int numOfSpecies = map.size();
     std::map<QString, std::map<QString, float>>::const_iterator it = map.begin();
@@ -667,7 +667,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _createPointSelectTree(this, "Create Point Select Tree"),
     _embeddingDataset(this, "Embedding Dataset"),
     _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion"),
-    _statusChangedAction(this, "Status Changed")
+    _statusChangedAction(this, "Status Changed"),
+    _removeTableSelection(this, "Remove Table Selection")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -687,6 +688,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _filterTreeDataset.setSerializationName("CSCCR:FilterTreeDataset");
     _createPointSelectTree.setSerializationName("CSCCR:CreatePointSelectTreeTrigger");
     _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
+    _removeTableSelection.setSerializationName("CSCCR:RemoveTableSelection");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
@@ -707,6 +709,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_topNGenesFilter.initialize(1, 100, 10);
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
     _geneNamesConnection.setToolTip("Gene Names Connection");
+    _removeTableSelection.setToolTip("Remove Table Selection");
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
 
@@ -937,6 +940,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _filterTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
     _statusChangedAction.setString("M");
 }
@@ -990,6 +994,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _createPointSelectTree.fromParentVariantMap(variantMap);
     _referenceTreeDataset.fromParentVariantMap(variantMap);
     _geneNamesConnection.fromParentVariantMap(variantMap);
+    _removeTableSelection.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
 }
 
@@ -1013,6 +1018,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _geneNamesConnection.insertIntoVariantMap(variantMap);
     _filterTreeDataset.insertIntoVariantMap(variantMap);
     _createPointSelectTree.insertIntoVariantMap(variantMap);
+    _removeTableSelection.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }

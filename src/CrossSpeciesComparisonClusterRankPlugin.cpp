@@ -92,6 +92,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     //extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
     extraOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
+    extraOptionsGroup->addAction(&_settingsAction.getRemoveTableSelection());
 
     
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
@@ -762,8 +763,11 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 
             }
             _pauseSelectionEvent = true;
+            //need to trigger remove table selection event first
+            _settingsAction.getRemoveTableSelection().trigger();
             pointsDataset->setSelectionIndices(selectedIndices);
             mv::events().notifyDatasetDataSelectionChanged(pointsDataset);
+            _settingsAction.getStatusChangedAction().setString("M");
             _pauseSelectionEvent = false;
         }
         else
