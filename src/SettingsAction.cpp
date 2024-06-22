@@ -652,9 +652,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     WidgetAction(&CrossSpeciesComparisonClusterRankPlugin, "CrossSpeciesComparisonClusterRankPlugin Settings"),
     _crossSpeciesComparisonClusterRankPlugin(CrossSpeciesComparisonClusterRankPlugin),
     _mainPointsDataset(this, "Main Points Dataset"),
-    _hierarchyTopClusterDataset(this, "Hierarchy Top Cluster Dataset"),
-    _hierarchyMiddleClusterDataset(this, "Hierarchy Middle Cluster Dataset"),
-    _hierarchyBottomClusterDataset(this, "Hierarchy Bottom Cluster Dataset"),
+    _hierarchyTopClusterDataset(this, "Top Hierarchy Cluster"),
+    _hierarchyMiddleClusterDataset(this, "Middle Hierarchy Cluster"),
+    _hierarchyBottomClusterDataset(this, "Bottom Hierarchy Cluster"),
     _selectedClusterNamesVariant(this, "Selected Cluster Names Variant"),
     //_filteredGeneNamesVariant(this, "Filtered Gene Names Variant"),
     //_updateButtonForGeneFiltering(this, "Filter Genes Trigger"),
@@ -662,7 +662,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_topNGenesFilter(this, "Top N Genes Filter"),
     _optionSelectionAction(*this),
     _referenceTreeDataset(this, "Reference Tree Dataset"),
-    _filterTreeDataset(this, "Filter Tree Dataset"),
+    _filterEditTreeDataset(this, "Filter Tree Dataset"),
     _geneNamesConnection(this, "Gene Names Connection"),
     _createPointSelectTree(this, "Create Point Select Tree"),
     _embeddingDataset(this, "Embedding Dataset"),
@@ -685,7 +685,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setSerializationName("CSCCR:SpeciesNamesDataset");
     //_topNGenesFilter.setSerializationName("CSCCR:TopNGenesFilter");
     _referenceTreeDataset.setSerializationName("CSCCR:ReferenceTreeDataset");
-    _filterTreeDataset.setSerializationName("CSCCR:FilterTreeDataset");
+    _filterEditTreeDataset.setSerializationName("CSCCR:FilterTreeDataset");
     _createPointSelectTree.setSerializationName("CSCCR:CreatePointSelectTreeTrigger");
     _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
     _removeTableSelection.setSerializationName("CSCCR:RemoveTableSelection");
@@ -703,7 +703,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_filteredGeneNamesVariant.setToolTip("Filtered Gene Names Variant");
     //_updateButtonForGeneFiltering.setToolTip("Filter Genes Trigger");
     _speciesNamesDataset.setToolTip("Species Names Dataset");
-    _filterTreeDataset.setToolTip("Filter Tree Dataset");
+    _filterEditTreeDataset.setToolTip("Filter Tree Dataset");
     _createPointSelectTree.setToolTip("Create Point Select Tree Trigger");
     //_topNGenesFilter.setToolTip("Top N Genes Filter");
     //_topNGenesFilter.initialize(1, 100, 10);
@@ -732,14 +732,14 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == ClusterType;
         });
-    _filterTreeDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+    _filterEditTreeDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == CrossSpeciesComparisonTreeType;
         });
     _referenceTreeDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == CrossSpeciesComparisonTreeType;
         });
     const auto filterTreedatasetUpdate = [this]() -> void {};
-    connect(&_filterTreeDataset, &DatasetPickerAction::currentIndexChanged, this, filterTreedatasetUpdate);
+    connect(&_filterEditTreeDataset, &DatasetPickerAction::currentIndexChanged, this, filterTreedatasetUpdate);
     const auto referenceTreedatasetUpdate = [this]() -> void {};
     connect(&_referenceTreeDataset, &DatasetPickerAction::currentIndexChanged, this, referenceTreedatasetUpdate);
     const auto hierarchyTopClusterDatasetUpdate = [this]() -> void
@@ -937,7 +937,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _speciesNamesDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     //_topNGenesFilter.setDefaultWidgetFlags(IntegralAction::WidgetFlag::SpinBox | IntegralAction::WidgetFlag::Slider);
     _referenceTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
-    _filterTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
+    _filterEditTreeDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
@@ -990,7 +990,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     //_updateButtonForGeneFiltering.fromParentVariantMap(variantMap);
     //_topNGenesFilter.fromParentVariantMap(variantMap);
     _speciesNamesDataset.fromParentVariantMap(variantMap);
-    _filterTreeDataset.fromParentVariantMap(variantMap);
+    _filterEditTreeDataset.fromParentVariantMap(variantMap);
     _createPointSelectTree.fromParentVariantMap(variantMap);
     _referenceTreeDataset.fromParentVariantMap(variantMap);
     _geneNamesConnection.fromParentVariantMap(variantMap);
@@ -1016,7 +1016,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _speciesNamesDataset.insertIntoVariantMap(variantMap);
     _referenceTreeDataset.insertIntoVariantMap(variantMap);
     _geneNamesConnection.insertIntoVariantMap(variantMap);
-    _filterTreeDataset.insertIntoVariantMap(variantMap);
+    _filterEditTreeDataset.insertIntoVariantMap(variantMap);
     _createPointSelectTree.insertIntoVariantMap(variantMap);
     _removeTableSelection.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);

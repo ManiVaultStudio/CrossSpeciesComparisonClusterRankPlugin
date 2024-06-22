@@ -78,9 +78,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     auto extraOptionsGroup = new VerticalGroupAction(this, "Settings");
 
     extraOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
-    extraOptionsGroup->addAction(&_settingsAction.getHierarchyTopClusterDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
-    extraOptionsGroup->addAction(&_settingsAction.getHierarchyBottomClusterDataset());
+
     extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
     extraOptionsGroup->addAction(&_settingsAction.getSpeciesNamesDataset());
@@ -93,14 +91,17 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
     extraOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
     extraOptionsGroup->addAction(&_settingsAction.getRemoveTableSelection());
-
+    extraOptionsGroup->addAction(&_settingsAction.getFilterEditTreeDataset());
+    extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+    extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Trigger");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("database"));
-    mainOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
-    mainOptionsGroup->addAction(&_settingsAction.getFilterTreeDataset());
-    mainOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
+    
+    mainOptionsGroup->addAction(&_settingsAction.getHierarchyTopClusterDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
+    mainOptionsGroup->addAction(&_settingsAction.getHierarchyBottomClusterDataset());
 
     mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
     mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
@@ -259,7 +260,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             }
            
 
-            if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size() > 0)
+            if (_settingsAction.getFilterEditTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size() > 0)
             {
 
 
@@ -297,7 +298,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
                     qDebug() << "*******************";
                     */
 
-                    auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+                    auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterEditTreeDataset().getCurrentDataset().getDatasetId());
                     mainTreeDataset->setTreeData(valueStringReference);
 
                     events().notifyDatasetDataChanged(mainTreeDataset);
@@ -784,7 +785,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
     
 
     
-    if (_settingsAction.getFilterTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
+    if (_settingsAction.getFilterEditTreeDataset().getCurrentDataset().isValid() && _settingsAction.getSpeciesNamesDataset().getCurrentDataset().isValid() && selectedIndices.size()>0 )
     {
         
         
@@ -819,7 +820,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
             qDebug() << "*******************";
             */
 
-            auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterTreeDataset().getCurrentDataset().getDatasetId());
+            auto mainTreeDataset = mv::data().getDataset<CrossSpeciesComparisonTree>(_settingsAction.getFilterEditTreeDataset().getCurrentDataset().getDatasetId());
             mainTreeDataset->setTreeData(valueStringReference);
 
             events().notifyDatasetDataChanged(mainTreeDataset);
@@ -827,10 +828,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
         }
 
     }
-    else
-    {
-        qDebug() << "Datasets not valid";
-    }
+
 
 
     //// ask core for the selection set for the current data set
