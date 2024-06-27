@@ -89,7 +89,7 @@ public: // Action getters
     //VariantAction& getFilteredGeneNames() { return _filteredGeneNamesVariant; }
     //TriggerAction& getUpdateButtonForGeneFiltering() { return _updateButtonForGeneFiltering; }
     DatasetPickerAction& getSpeciesNamesDataset() { return _speciesNamesDataset; }
-    DatasetPickerAction& getFilterTreeDataset() { return _filterTreeDataset; }
+    DatasetPickerAction& getFilterEditTreeDataset() { return _filterEditTreeDataset; }
     //IntegralAction& getTopNGenesFilter() { return _topNGenesFilter; }
     OptionSelectionAction& getOptionSelectionAction() { return _optionSelectionAction; }
     DatasetPickerAction& getReferenceTreeDataset() { return _referenceTreeDataset; }
@@ -134,7 +134,7 @@ protected:
     //VariantAction           _filteredGeneNamesVariant;
     //TriggerAction          _updateButtonForGeneFiltering;
     DatasetPickerAction    _speciesNamesDataset;
-    DatasetPickerAction    _filterTreeDataset;
+    DatasetPickerAction    _filterEditTreeDataset;
     //std::map<QString, std::map<QString, float>> _clusterNameToGeneNameToExpressionValue;
     //IntegralAction          _topNGenesFilter;
     OptionSelectionAction         _optionSelectionAction;
