@@ -78,7 +78,14 @@ float calculateMean(const std::vector<float>& v) {
     if (v.empty())
         return 0.0f;
 
-    float sum = std::reduce(std::execution::par, v.begin(), v.end());
+    
+    float sum = 0.0f;
+    #ifdef _WIN32
+        sum = std::reduce(std::execution::par, v.begin(), v.end());
+    #else
+        sum = std::reduce( v.begin(), v.end());
+    #endif
+
     float mean = sum / v.size();
 
     return mean;
