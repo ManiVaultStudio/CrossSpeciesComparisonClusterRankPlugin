@@ -78,7 +78,14 @@ float calculateMean(const std::vector<float>& v) {
     if (v.empty())
         return 0.0f;
 
-    float sum = std::reduce(v.begin(), v.end());
+    
+    float sum = 0.0f;
+    #ifdef _WIN32
+        sum = std::reduce(std::execution::par, v.begin(), v.end());
+    #else
+        sum = std::reduce( v.begin(), v.end());
+    #endif
+
     float mean = sum / v.size();
 
     return mean;
@@ -381,7 +388,7 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
     targetNewick += ";";  // End of Newick string
 
     */
-  /*  if (fullTreeNames.size()>0 && leafnames.size()>0 && targetNewick!="")
+    /*if (fullTreeNames.size()>0 && leafnames.size()>0 && targetNewick != "")
     {
 
    //convert  std::vector<QString> to QStringList leafnames
@@ -402,7 +409,7 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
         qDebug() << "*****************\n";
         */
         //add a ";" to the end of the string pair.second.toStdString()
-  /*      std::string modifiedNewick = pair.second.toStdString();
+        /*std::string modifiedNewick = pair.second.toStdString();
         
 
        const char* string1 = targetNewick.c_str();
@@ -449,8 +456,8 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
         //qDebug()<<"\n****Simvalue: "<<sim<<"****\n";
 
         // If the current newick tree is the same as the target
-/*
-        float similarity = 1.0 - static_cast<float>(sim) / static_cast<float>(numOfSpecies); //the similarity between two Newick trees,
+
+        /*float similarity = 1.0 - static_cast<float>(sim) / static_cast<float>(numOfSpecies); //the similarity between two Newick trees,
 
 
         //insert pair.first modifiedNewick similarity to treeSimilarities
@@ -486,7 +493,7 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
         }
 
         */
- /*   }
+    /*}
 
 }
     }
@@ -564,9 +571,9 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
     }
 
     */
-/*
+
     //based on first column string value from  model, update the 4th column vaLUE   from treeSimilarities
-    for (int i = 0; i < model->rowCount(); i++) {
+    /*for (int i = 0; i < model->rowCount(); i++) {
         QString gene = model->item(i, 0)->text();
         //qDebug() <<"Gene: " << gene;
         //qDebug() << "Tree Similarity: " << treeSimilarities[gene];
@@ -588,8 +595,7 @@ QVariant SettingsAction::createModelFromData(const QStringList& returnGeneList, 
 
 }
 */
-/*
-QVariant SettingsAction::findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, QString datasetId, float treeSimilarityScore) {
+/*QVariant SettingsAction::findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, QString datasetId, float treeSimilarityScore) {
     
     if (map.empty() || n <= 0) {
         return QVariant();
@@ -640,13 +646,13 @@ QVariant SettingsAction::findTopNGenesPerCluster(const std::map<QString, std::ma
     //for (auto& pair : geneAppearanceCounter) {
     //    std::cout << "Gene: " << pair.first.toStdString() << ", Count: " << pair.second << std::endl;
     //}
-
-    QVariant returnValue = createModelFromData(returnGeneList, map, datasetId, treeSimilarityScore, geneAppearanceCounter,n);
+    QVariant returnValue;
+    //QVariant returnValue = createModelFromData(returnGeneList, map, datasetId, treeSimilarityScore, geneAppearanceCounter,n);
 
     return returnValue;
 }
-
 */
+
 
 
 SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpeciesComparisonClusterRankPlugin) :
