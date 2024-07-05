@@ -86,7 +86,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getFilterEditTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
-    
+    extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Linking Options");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("link"));
@@ -113,12 +113,12 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     mainOptionsGroup->addAction(wrappedDividerActionMain2);
 
 
-    mainOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
+    
     mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
    
 
     mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
-    mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
+    //mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
 
     mainLayout->addLayout(mainOptionsLayout);
     mainLayout->addWidget(_chartWidget, 1);
