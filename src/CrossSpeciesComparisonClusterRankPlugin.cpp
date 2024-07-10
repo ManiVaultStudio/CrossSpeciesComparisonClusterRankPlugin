@@ -116,6 +116,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     
     mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
+    mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
    
 
     //mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
