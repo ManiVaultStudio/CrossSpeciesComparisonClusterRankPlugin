@@ -18,7 +18,6 @@ ChartCommObject::ChartCommObject() :
 
 void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
     _selectedIDsFromJS.clear();
-
    
 
     if (data!="")
@@ -37,6 +36,13 @@ void ChartCommObject::js_qt_passSelectionToQt(const QString& data){
     }
     // Notify ManiVault core and thereby other plugins about new selection
     emit passSelectionToCore(_selectedIDsFromJS);
+}
+
+
+void ChartCommObject::js_qt_passClusterOrderToQT(const QString& data) {
+
+    // Notify ManiVault core and thereby other plugins about new selection
+    emit passClusterOrderToCore(data);
 }
 
 

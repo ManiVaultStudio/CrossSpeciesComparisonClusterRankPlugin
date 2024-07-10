@@ -28,11 +28,13 @@ signals:
     // Signals Qt internal
     // Used to inform the plugin about new selection: the plugin class then updates ManiVault's core
     void passSelectionToCore(const std::vector<QString>& selectionIDs);
+    void passClusterOrderToCore(const QString& selectionIDs);
 
 public slots:
     // Invoked from JS side 
     // Used to receive selection IDs from the D3 plot, will emit passSelectionToCore
     void js_qt_passSelectionToQt(const QString& data);
+    void js_qt_passClusterOrderToQT(const QString& data);
 
 private:
     std::vector<QString> _selectedIDsFromJS;   // Used for converting incoming selection IDs from the js side

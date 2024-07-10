@@ -51,6 +51,19 @@ function passSelectionToQt(dat) {
     }
 }
 
+function passClusterOrderToQT(dat) {
+    //convert dat to string from array by adding a separator and then pass it to Qt
+    if (dat != "") {
+        dat = dat.join(" @%$,$%@ ");
+    } else {
+        dat = "";
+    }
+
+    if (isQtAvailable) {
+        QtBridge.js_qt_passClusterOrderToQT(dat);
+    }
+}
+
 // utility function: pipe errors to log
 window.onerror = function (msg, url, num) {
     log("Cross-Species Comparison Cluster Hierarchy View: qwebchannel: Error: " + msg + "\nURL: " + url + "\nLine: " + num);
