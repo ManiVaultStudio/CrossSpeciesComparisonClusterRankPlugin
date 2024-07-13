@@ -14,6 +14,7 @@ var margin = { top: 10, right: 10, bottom: 10, left: 10 };
 var width;
 var height;
 var selectedClusterContainer = [];
+var isDebug = false;
 function doALoadOfStuff() {
     if (data != "") {
         VisCreate();
