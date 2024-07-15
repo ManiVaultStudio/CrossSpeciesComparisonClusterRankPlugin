@@ -87,6 +87,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
+    extraOptionsGroup->addAction(&_settingsAction.getClusterOrder());
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Linking Options");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("link"));
@@ -115,6 +116,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     
     mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
+    mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
    
 
     //mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
@@ -386,6 +388,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
+    connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passClusterOrderToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder);
 
     _settingsAction.getStatusChangedAction().setString("M");
 
@@ -727,7 +730,11 @@ QJsonObject CrossSpeciesComparisonClusterRankPlugin::createJsonTree(std::map<QSt
     return valueStringReference;
 }
 
-
+void CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder(const QString& orderedClusters)
+{
+    _settingsAction.getClusterOrder().setString(orderedClusters);
+    //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder: Send cluster order to core"<< orderedClusters;
+}
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
 {

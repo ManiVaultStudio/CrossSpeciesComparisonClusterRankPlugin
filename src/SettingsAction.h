@@ -99,6 +99,7 @@ public: // Action getters
     OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
     StringAction& getStatusChangedAction() { return _statusChangedAction; }
     TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
+    StringAction& getClusterOrder() { return _clusterOrder; }
 
 
 
@@ -146,4 +147,5 @@ protected:
     OptionsAction           _topHierarchyRelativeClusterCountInclusion;
     StringAction           _statusChangedAction;
     TriggerAction            _removeTableSelection;
+    StringAction             _clusterOrder;
 };
