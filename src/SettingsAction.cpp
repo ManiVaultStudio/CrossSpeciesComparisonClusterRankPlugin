@@ -2,7 +2,7 @@
 #include "CrossSpeciesComparisonClusterRankPlugin.h"
 #include <vector>
 #include <numeric>
-#include <execution>
+
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -17,6 +17,9 @@
 #include <sstream>
 #include <QString>
 #include <cstdio>
+#ifdef _WIN32
+#include <execution>
+#endif
 
 bool areSameIgnoreOrder(const QStringList& list1, const QStringList& list2) {
     if (list1.size() != list2.size()) {
