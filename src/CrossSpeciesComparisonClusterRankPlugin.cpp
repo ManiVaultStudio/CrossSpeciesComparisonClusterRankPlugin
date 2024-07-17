@@ -26,7 +26,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QString>
-#include <execution>
 #include <cmath>
 #include <algorithm>
 #include <sstream>
