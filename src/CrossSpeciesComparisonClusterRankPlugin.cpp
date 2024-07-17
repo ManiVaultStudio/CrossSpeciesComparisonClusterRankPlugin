@@ -13,8 +13,9 @@
 #include <QVariantMap>
 #include <QMimeData>
 #include <QDebug>
-
-
+#include "ClusterData/ClusterData.h"
+#include <CrossSpeciesComparisonTreeData.h>
+#include "PointData/PointData.h"
 #include "lib/JSONnlohmann/json.hpp"
 #include "lib/Clustering/fastcluster.h"
 #include "lib/JSONnlohmann/json.hpp"
