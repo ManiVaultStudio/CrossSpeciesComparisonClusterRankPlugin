@@ -1,4 +1,4 @@
-name: CrossSpeciesComparisonPhyTVuPlugin
+name: CrossSpeciesComparisonClusterRankPlugin
 
 on:
   push:
