@@ -1119,10 +1119,11 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 {
                     PointDataStruct pointDataValues;
                     pointDataValues.numPoints = finalIndicesSize;
-                    pointDataValues.numDimensions = mainPointsNumofDims;
-                    pointDataValues.dimensionNames = mainPointsDimensions;
-                    std::vector<float> pointVector(finalIndicesSize * mainPointsNumofDims);
                     auto childData = mv::data().getDataset<Points>(idVal);
+                    pointDataValues.numDimensions = childData->getNumDimensions();
+                    pointDataValues.dimensionNames = childData->getDimensionNames();
+                    std::vector<float> pointVector(finalIndicesSize * mainPointsNumofDims);
+                    
                     for (int i = 0; i < finalIndicesSize; i++)
                     {
                         for (int j = 0; j < mainPointsNumofDims; j++)
