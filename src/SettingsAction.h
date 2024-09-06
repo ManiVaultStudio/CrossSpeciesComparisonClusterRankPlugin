@@ -35,6 +35,15 @@ using namespace mv::gui;
 class QMenu;
 class CrossSpeciesComparisonClusterRankPlugin;
 
+// Define the struct for PointData
+struct PointDataStruct {
+
+    std::vector<float> pointVector;
+    int numPoints;
+    int numDimensions;
+    std::vector<QString> dimensionNames;
+};
+
 class FetchMetaData;
 namespace mv
 {
@@ -113,6 +122,8 @@ public: // Action getters
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
     QString createJsonTreeFromNewick(QString tree, std::vector<QString> leafNames);
+    void populatePointData(QString& datasetId, PointDataStruct& pointDataValues);
+    void populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap);
     private:
         //QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, const QString& treeDatasetId, const float& treeSimilarityScore, const std::map<QString, std::vector<QString>>& geneCounter, const int& n);
         //QVariant findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, QString datasetId, float treeSimilarityScore);
