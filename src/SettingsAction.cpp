@@ -1139,28 +1139,36 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         qDebug() << "Number of children point datasets: " << childrenPointDatasets.size();
         if (subsampleInplace) {
             qDebug() << "Replacing points inplace.";
+            qDebug() << "Replacing parent point dataset inplace.";
             populatePointData(mainPointsDatasetId, parentPointDataValues);
+            qDebug() << "Replacing children point datasets inplace.";
+            
             for (auto& childData : childrenPointDatasets)
             {
                 QString dataId = childData.first;
                 PointDataStruct dataValues = childData.second;
                 populatePointData(dataId, dataValues);
             }
+            qDebug() << "Replacing children cluster datasets inplace.";
+            
             for (auto& childData : childrenClusterDatasets)
             {
                 QString dataId = childData.first;
                 std::map<QString, std::pair<QColor, std::vector<int>>> dataValues = childData.second;
                 populateClusterData(dataId, dataValues);
             }
-
+            qDebug() << "Inplace subsampling completed.";
         }
         else {
             qDebug() << "Creating new datasets for subsampled data.";
             //create parentPointDataset then children point datasets then childrencluster datasets
+            qDebug() << "Creating parent point dataset.";
             auto parentDataset = mv::data().createDataset("Points", mainPointsDataset->getGuiName() + "_subsampled");
             events().notifyDatasetAdded(parentDataset);
             QString parentID = parentDataset->getId();
+            qDebug() << "Populating parent point dataset.";
             populatePointData(parentID, parentPointDataValues);
+            qDebug() << "Creating children point datasets.";
             for (auto& childData : childrenPointDatasets)
             {
                 QString dataId = childData.first;
@@ -1170,6 +1178,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 QString childID = childDataset->getId();
                 populatePointData(childID, dataValues);
             }
+            qDebug() << "Creating children cluster datasets.";
             for (auto& childData : childrenClusterDatasets)
             {
                 QString dataId = childData.first;
@@ -1179,6 +1188,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 QString childID = childDataset->getId();
                 populateClusterData(childID, dataValues);
             }
+            qDebug() << "Subsampling completed.";
         }
 
         auto end = std::chrono::high_resolution_clock::now();
