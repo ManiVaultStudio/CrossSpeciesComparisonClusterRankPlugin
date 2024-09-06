@@ -2,7 +2,7 @@
 #include "CrossSpeciesComparisonClusterRankPlugin.h"
 #include <vector>
 #include <numeric>
-
+#include <QtConcurrent>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -46,6 +46,17 @@ float calculateVariance(const std::vector<float>& numbers) {
     }
 
     return variance / numbers.size();
+}
+std::vector<int> convertToIntVector(const std::vector<uint32_t>& input) {
+    std::vector<int> output(input.size());
+    std::transform(input.begin(), input.end(), output.begin(), [](uint32_t val) {
+        return static_cast<int>(val);
+        });
+    return output;
+}
+void updateIndicesMap(const Cluster& cluster, std::map<QString, std::vector<int>>& indicesMap) {
+    auto clusterIndices = cluster.getIndices();
+    indicesMap[cluster.getName()] = convertToIntVector(clusterIndices);
 }
 std::string jsonToNewick(const nlohmann::json& node, const std::vector<QString>& species) {
     std::string newick;
@@ -111,6 +122,18 @@ Statistics calculateStatistics(const std::vector<float>& numbers) {
     float stdDeviation = std::sqrt(variance);
 
     return { mean, variance, stdDeviation };
+}
+void updateIndicesMapForCluster(const Cluster& cluster, std::map<QString, std::vector<int>>& indicesMap) {
+    auto clusterIndices = cluster.getIndices();
+    indicesMap[cluster.getName()] = convertToIntVector(clusterIndices);
+}
+
+// Function to handle subsampling based on the level
+void handleSubsamplingMap(const QString& subsampleLevel, const QVector<Cluster>& clusters, std::map<QString, std::vector<int>>& indicesMap) {
+    for (auto& cluster : clusters) {
+        auto clusterIndices = cluster.getIndices();
+        indicesMap[cluster.getName()] = convertToIntVector(clusterIndices);
+    }
 }
 
 std::string SettingsAction::mergeToNewick(int* merge, int numOfLeaves) {
@@ -735,7 +758,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _generateTreeDataFilesPerClusterStart.setToolTip("Generate Tree Data Files Per Cluster");
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
-    _subsamplePercentValue.initialize(0.00, 100.00, 15.00, 2);
+    _subsamplePercentValue.initialize(1.00, 100.00, 15.00, 2);
     _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Middle");
     _subsampleInplace.setChecked(true);
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
@@ -754,6 +777,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _hierarchyBottomClusterDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == ClusterType;
         });
+
     _speciesNamesDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == ClusterType;
         });
@@ -786,6 +810,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
         };
     connect(&_hierarchyBottomClusterDataset, &DatasetPickerAction::currentIndexChanged, this, hierarchyBottomClusterDatasetUpdate);
+
 
 
 
@@ -960,9 +985,129 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
 
     const auto updateSubsampleDataStart = [this]() -> void
-        {
+    {
+        auto mainPointsDataset = _mainPointsDataset.getCurrentDataset();
+        auto speciesNamesDataset = _speciesNamesDataset.getCurrentDataset();
+        auto topHierarchyDataset = _hierarchyTopClusterDataset.getCurrentDataset();
+        auto middleHierarchyDataset = _hierarchyMiddleClusterDataset.getCurrentDataset();
+        auto bottomHierarchyDataset = _hierarchyBottomClusterDataset.getCurrentDataset();
 
-        };
+        if (!speciesNamesDataset.isValid() && !mainPointsDataset.isValid() && !topHierarchyDataset.isValid() && !middleHierarchyDataset.isValid() && !bottomHierarchyDataset.isValid())
+        {
+            qDebug() << "datasets Not Valid! Cannot perform subsample operation. Select all datasets";
+            return;
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        auto subsampleLevel = _subsampleByLevel.getCurrentText();
+        auto subsamplePercent = _subsamplePercentValue.getValue();
+        auto subsampleInplace = _subsampleInplace.isChecked();
+        auto speciesData = mv::data().getDataset<Clusters>(speciesNamesDataset->getId());
+        auto mainPointsData = mv::data().getDataset<Points>(mainPointsDataset->getId());
+        auto topLevelData = mv::data().getDataset<Clusters>(topHierarchyDataset->getId());
+        auto middleLevelData = mv::data().getDataset<Clusters>(middleHierarchyDataset->getId());
+        auto bottomLevelData = mv::data().getDataset<Clusters>(bottomHierarchyDataset->getId());
+
+        auto tophierarchyClusters = topLevelData->getClusters();
+        auto middlehierarchyClusters = middleLevelData->getClusters();
+        auto bottomhierarchyClusters = bottomLevelData->getClusters();
+        auto speciesClusters = speciesData->getClusters();
+        auto mainPointsDimensions = mainPointsData->getDimensionNames();
+        auto mainPointsNumofDims = mainPointsData->getNumDimensions();
+        auto mainPointsNumofPoints = mainPointsData->getNumPoints();
+
+        int maxNumOfPointsRequiredbySampling = static_cast<int>(subsamplePercent / 100.0 * mainPointsNumofPoints);
+
+        if (maxNumOfPointsRequiredbySampling < 1)
+        {
+            qDebug() << "Cannot perform subsampling. Number of points required by sampling is less than 1";
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            qDebug() << "Elapsed time: " << elapsed.count() << " seconds";
+            return;
+        }
+        qDebug() <<"Total indices in the dataset" << mainPointsNumofPoints;
+        qDebug() << "Number of points that will be generated by sampling should be less than: " << maxNumOfPointsRequiredbySampling;
+
+        std::pair<QString, std::pair<QString, std::vector<int>>> subsampleData;
+        std::map<QString, std::vector<int>> speciesIndicesMap;
+        std::map<QString, std::vector<int>> selectedhierarchyIndicesMap;
+
+        // Update species indices map concurrently
+        auto speciesFuture = QtConcurrent::run([&]() {
+            for (auto& cluster : speciesClusters) {
+                updateIndicesMapForCluster(cluster, speciesIndicesMap);
+            }
+        });
+
+        // Handle subsampling based on the level
+        QFuture<void> hierarchyFuture;
+        if (subsampleLevel == "Top") {
+            hierarchyFuture = QtConcurrent::run([&]() {
+                handleSubsamplingMap(subsampleLevel, tophierarchyClusters, selectedhierarchyIndicesMap);
+            });
+        }
+        else if (subsampleLevel == "Middle") {
+            hierarchyFuture = QtConcurrent::run([&]() {
+                handleSubsamplingMap(subsampleLevel, middlehierarchyClusters, selectedhierarchyIndicesMap);
+            });
+        }
+        else if (subsampleLevel == "Bottom") {
+            hierarchyFuture = QtConcurrent::run([&]() {
+                handleSubsamplingMap(subsampleLevel, bottomhierarchyClusters, selectedhierarchyIndicesMap);
+            });
+        }
+        else {
+            qDebug() << "Invalid subsample level. Cannot perform subsampling";
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            qDebug() << "Elapsed time: " << elapsed.count() << " seconds";
+            return;
+        }
+
+        // Wait for the concurrent tasks to complete
+        speciesFuture.waitForFinished();
+        hierarchyFuture.waitForFinished();
+
+        // Combine indices from selectedhierarchyIndicesMap and speciesIndicesMap
+        std::vector<int> finalIndices;
+        for (const auto& pair : selectedhierarchyIndicesMap) {
+            finalIndices.insert(finalIndices.end(), pair.second.begin(), pair.second.end());
+        }
+
+        for (const auto& pair : speciesIndicesMap) {
+            finalIndices.insert(finalIndices.end(), pair.second.begin(), pair.second.end());
+        }
+
+        // Ensure good distribution by shuffling
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(finalIndices.begin(), finalIndices.end(), g);
+
+        // Limit the number of points
+        if (finalIndices.size() > maxNumOfPointsRequiredbySampling) {
+            finalIndices.resize(maxNumOfPointsRequiredbySampling);
+        }
+
+        // Print indices for debugging
+        /*for (auto& index : finalIndices) {
+            qDebug() << index;
+        }*/
+        qDebug() << finalIndices.size() << " indices generated by subsampling";
+
+        if (subsampleInplace)
+        {
+            qDebug() << "Replacing points inplace";
+        }
+        else
+        {
+            qDebug() << "Creating new datasets for subsampled data";
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        qDebug() << "Elapsed time: " << elapsed.count() << " seconds";
+    };
     connect(&_subsampleDataStart, &TriggerAction::triggered, this, updateSubsampleDataStart);
 
 

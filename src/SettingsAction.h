@@ -137,6 +137,7 @@ protected:
     DatasetPickerAction    _hierarchyTopClusterDataset;
     DatasetPickerAction    _hierarchyMiddleClusterDataset;
     DatasetPickerAction    _hierarchyBottomClusterDataset;
+
     VariantAction           _selectedClusterNamesVariant;
     //VariantAction           _filteredGeneNamesVariant;
     //TriggerAction          _updateButtonForGeneFiltering;
