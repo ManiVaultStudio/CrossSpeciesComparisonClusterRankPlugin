@@ -99,6 +99,12 @@ public: // Action getters
     OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
     StringAction& getStatusChangedAction() { return _statusChangedAction; }
     TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
+    TriggerAction& getSubsampleDataStart() { return _subsampleDataStart; }
+    OptionAction& getSubsampleByLevel() { return _subsampleByLevel; }
+    DecimalAction& getSubsamplePercentValue() { return _subsamplePercentValue; }
+    ToggleAction& getSubsampleInplace() { return _subsampleInplace; }
+
+    TriggerAction& getGenerateTreeDataFilesPerClusterStart() { return _generateTreeDataFilesPerClusterStart; }
     StringAction& getClusterOrder() { return _clusterOrder; }
 
 
@@ -147,5 +153,11 @@ protected:
     OptionsAction           _topHierarchyRelativeClusterCountInclusion;
     StringAction           _statusChangedAction;
     TriggerAction            _removeTableSelection;
+    TriggerAction            _subsampleDataStart;
+    OptionAction             _subsampleByLevel;
+    DecimalAction           _subsamplePercentValue;
+    ToggleAction             _subsampleInplace;
+    TriggerAction            _generateTreeDataFilesPerClusterStart;
     StringAction             _clusterOrder;
+
 };

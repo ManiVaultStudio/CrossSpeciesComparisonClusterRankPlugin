@@ -88,6 +88,18 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
     extraOptionsGroup->addAction(&_settingsAction.getClusterOrder());
+    extraOptionsGroup->addAction(&_settingsAction.getGenerateTreeDataFilesPerClusterStart());
+
+
+    auto subsamplingOptionsGroup = new VerticalGroupAction(this, "Subsampling");
+
+    subsamplingOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+
+    subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleByLevel());
+    subsamplingOptionsGroup->addAction(&_settingsAction.getSubsamplePercentValue());
+    subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleInplace());
+    subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleDataStart());
+
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Linking Options");
     mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("link"));
@@ -119,6 +131,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
    
 
+    //mainOptionsLayout->addWidget(subsamplingOptionsGroup->createCollapsedWidget(&getWidget()), 3);
     //mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
     //mainOptionsLayout->addWidget(extraOptionsGroup->createCollapsedWidget(&getWidget()), 1);
 

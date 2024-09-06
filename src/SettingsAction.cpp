@@ -679,7 +679,12 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _topHierarchyRelativeClusterCountInclusion(this, "Top Hierarchy Relative Cluster Count Inclusion"),
     _statusChangedAction(this, "Status Changed"),
     _removeTableSelection(this, "Remove Table Selection"),
-    _clusterOrder(this, "Cluster Order")
+    _clusterOrder(this, "Cluster Order"),
+    _subsampleDataStart(this, "Subsample Data"),
+    _subsampleByLevel(this, "Subsample By Level"),
+    _subsamplePercentValue(this, "Subsample Percent Value"),
+    _subsampleInplace(this, "Subsample Inplace"),
+    _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -723,9 +728,16 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection.setToolTip("Gene Names Connection");
     _clusterOrder.setToolTip("Cluster Order");
     _removeTableSelection.setToolTip("Remove Table Selection");
+    _subsampleDataStart.setToolTip("Subsample Data");
+    _subsampleByLevel.setToolTip("Subsample By Level");
+    _subsamplePercentValue.setToolTip("Subsample Percent Value");
+    _subsampleInplace.setToolTip("Subsample Inplace");
+    _generateTreeDataFilesPerClusterStart.setToolTip("Generate Tree Data Files Per Cluster");
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
-
+    _subsamplePercentValue.initialize(0.00, 100.00, 15.00, 2);
+    _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Middle");
+    _subsampleInplace.setChecked(true);
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
         });
@@ -937,6 +949,27 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //connect(&_topNGenesFilter, &IntegralAction::valueChanged, this, topNGenesFilterUpdate);
 
 
+
+
+    const auto updateGenerateTreeDataFilesPerClusterStart = [this]() -> void
+        {
+
+        };
+    connect(&_generateTreeDataFilesPerClusterStart, &TriggerAction::triggered, this, updateGenerateTreeDataFilesPerClusterStart);
+
+
+
+    const auto updateSubsampleDataStart = [this]() -> void
+        {
+
+        };
+    connect(&_subsampleDataStart, &TriggerAction::triggered, this, updateSubsampleDataStart);
+
+
+
+
+
+
     _mainPointsDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _embeddingDataset.setDefaultWidgetFlags(DatasetPickerAction::WidgetFlag::ComboBox);
     _topHierarchyRelativeClusterCountInclusion.setDefaultWidgetFlags(OptionsAction::ComboBox || OptionsAction::File);
@@ -955,6 +988,11 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _clusterOrder.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
+    _subsampleDataStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
+    _subsampleByLevel.setDefaultWidgetFlags(OptionsAction::ComboBox);
+    _subsamplePercentValue.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
+    _subsampleInplace.setDefaultWidgetFlags(ToggleAction::CheckBox );
+    _generateTreeDataFilesPerClusterStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
     _statusChangedAction.setString("M");
 }
