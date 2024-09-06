@@ -124,6 +124,7 @@ public: // Action getters
     QString createJsonTreeFromNewick(QString tree, std::vector<QString> leafNames);
     void populatePointData(QString& datasetId, PointDataStruct& pointDataValues);
     void populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap);
+
     private:
         //QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, const QString& treeDatasetId, const float& treeSimilarityScore, const std::map<QString, std::vector<QString>>& geneCounter, const int& n);
         //QVariant findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, QString datasetId, float treeSimilarityScore);
