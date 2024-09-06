@@ -969,7 +969,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
     const auto updateGenerateTreeDataFilesPerClusterStart = [this]() -> void
         {
-
+            updateButtonTriggeredForTreeCreation();
         };
     connect(&_generateTreeDataFilesPerClusterStart, &TriggerAction::triggered, this, updateGenerateTreeDataFilesPerClusterStart);
 
@@ -1265,7 +1265,10 @@ void SettingsAction::populateClusterData(QString& datasetId, std::map<QString, s
 
 
 }
+void SettingsAction::updateButtonTriggeredForTreeCreation()
+{
 
+}
 
 SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* SettingsAction) :
     WidgetActionWidget(parent, SettingsAction)
