@@ -22,22 +22,7 @@ using namespace mv::util;
 
 class ChartWidget;
 
-/**
- * CrossSpeciesComparisonClusterRank view JS plugin class
- * 
- * This plugin showcases how a JavaScript-based visualization can be included in ManiVault 
- * Here, we use a D3 library, but other libraries like Vega-Lite follow the same pattern
- * 
- * This project:
- *  - Sets up a WebWidget, which displays an HTML webpage
- *  - Connects selections made a D3 plot with ManiVault
- * 
- * This projects does not implement selections from ManiVault to the D3 plot,
- * but such implementation follows the same form as the data-values communication
- * between cpp and JavaScript that is used here.
- *
- * @authors J. Thijssen & T. Kroes & A. Vieth
- */
+
 class CrossSpeciesComparisonClusterRankPlugin : public ViewPlugin
 {
     Q_OBJECT
