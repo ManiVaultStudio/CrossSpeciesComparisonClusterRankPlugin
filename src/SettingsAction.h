@@ -35,6 +35,15 @@ using namespace mv::gui;
 class QMenu;
 class CrossSpeciesComparisonClusterRankPlugin;
 
+// Define the struct for PointData
+struct PointDataStruct {
+
+    std::vector<float> pointVector;
+    int numPoints;
+    int numDimensions;
+    std::vector<QString> dimensionNames;
+};
+
 class FetchMetaData;
 namespace mv
 {
@@ -99,6 +108,12 @@ public: // Action getters
     OptionsAction& getTopHierarchyRelativeClusterCountInclusion() { return _topHierarchyRelativeClusterCountInclusion; }
     StringAction& getStatusChangedAction() { return _statusChangedAction; }
     TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
+    TriggerAction& getSubsampleDataStart() { return _subsampleDataStart; }
+    OptionAction& getSubsampleByLevel() { return _subsampleByLevel; }
+    DecimalAction& getSubsamplePercentValue() { return _subsamplePercentValue; }
+    ToggleAction& getSubsampleInplace() { return _subsampleInplace; }
+
+    TriggerAction& getGenerateTreeDataFilesPerClusterStart() { return _generateTreeDataFilesPerClusterStart; }
     StringAction& getClusterOrder() { return _clusterOrder; }
 
 
@@ -107,6 +122,9 @@ public: // Action getters
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
     QString createJsonTreeFromNewick(QString tree, std::vector<QString> leafNames);
+    void populatePointData(QString& datasetId, PointDataStruct& pointDataValues);
+    void populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap);
+    void updateButtonTriggeredForTreeCreation();
     private:
         //QVariant createModelFromData(const QStringList& returnGeneList, const std::map<QString, std::map<QString, float>>& map, const QString& treeDatasetId, const float& treeSimilarityScore, const std::map<QString, std::vector<QString>>& geneCounter, const int& n);
         //QVariant findTopNGenesPerCluster(const std::map<QString, std::map<QString, float>>& map, int n, QString datasetId, float treeSimilarityScore);
@@ -131,6 +149,7 @@ protected:
     DatasetPickerAction    _hierarchyTopClusterDataset;
     DatasetPickerAction    _hierarchyMiddleClusterDataset;
     DatasetPickerAction    _hierarchyBottomClusterDataset;
+
     VariantAction           _selectedClusterNamesVariant;
     //VariantAction           _filteredGeneNamesVariant;
     //TriggerAction          _updateButtonForGeneFiltering;
@@ -147,5 +166,10 @@ protected:
     OptionsAction           _topHierarchyRelativeClusterCountInclusion;
     StringAction           _statusChangedAction;
     TriggerAction            _removeTableSelection;
+    TriggerAction            _subsampleDataStart;
+    OptionAction             _subsampleByLevel;
+    DecimalAction           _subsamplePercentValue;
+    ToggleAction             _subsampleInplace;
+    TriggerAction            _generateTreeDataFilesPerClusterStart;
     StringAction             _clusterOrder;
 };
