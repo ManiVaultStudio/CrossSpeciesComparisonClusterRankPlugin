@@ -766,7 +766,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder(const QString&
 void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QString& orderedClusters)
 {
     //aplit the const clusterNameAndLevel = `${clusterName} @%$,$%@ ${clusterLevel}`;
-    
+    _settingsAction.getRightClickedCluster().setString("");
     _settingsAction.getRightClickedCluster().setString(orderedClusters);
     /*
     qDebug() << "Cluster Name and Level: " << orderedClusters;
