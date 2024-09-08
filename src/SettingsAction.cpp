@@ -756,6 +756,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
     _subsamplePercentValue.initialize(1.00, 100.00, 15.00, 2);
+    _rightClickedCluster.setString("");
     _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Middle");
     _subsampleInplace.setChecked(true);
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
