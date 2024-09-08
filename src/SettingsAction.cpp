@@ -698,7 +698,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _subsampleByLevel(this, "Subsample By Level"),
     _subsamplePercentValue(this, "Subsample Percent Value"),
     _subsampleInplace(this, "Subsample Inplace"),
-    _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster")
+    _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster"),
+    _rightClickedCluster(this, "Right Clicked Cluster"),
+    _clearRightClickedCluster(this, "Clear Right Clicked Cluster")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -741,6 +743,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
     _geneNamesConnection.setToolTip("Gene Names Connection");
     _clusterOrder.setToolTip("Cluster Order");
+    _rightClickedCluster.setToolTip("Right Clicked Cluster");
+    _clearRightClickedCluster.setToolTip("Clear Right Clicked Cluster");
     _removeTableSelection.setToolTip("Remove Table Selection");
     _subsampleDataStart.setToolTip("Subsample Data");
     _subsampleByLevel.setToolTip("Subsample By Level");
@@ -1288,6 +1292,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _clusterOrder.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _rightClickedCluster.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _clearRightClickedCluster.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleDataStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleByLevel.setDefaultWidgetFlags(OptionsAction::ComboBox);

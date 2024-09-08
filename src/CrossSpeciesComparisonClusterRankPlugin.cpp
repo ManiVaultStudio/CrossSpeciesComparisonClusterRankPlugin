@@ -87,7 +87,6 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-    extraOptionsGroup->addAction(&_settingsAction.getClusterOrder());
     extraOptionsGroup->addAction(&_settingsAction.getGenerateTreeDataFilesPerClusterStart());
 
 
@@ -129,6 +128,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     
     mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
     mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
+    mainOptionsGroup->addAction(&_settingsAction.getRightClickedCluster());
+    mainOptionsGroup->addAction(&_settingsAction.getClearRightClickedCluster());
    
 
     //mainOptionsLayout->addWidget(subsamplingOptionsGroup->createCollapsedWidget(&getWidget()), 3);
@@ -161,6 +162,19 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             _embeddingDataset = _settingsAction.getEmbeddingDataset().getCurrentDataset();
         };
     connect(&_settingsAction.getEmbeddingDataset(), &DatasetPickerAction::currentIndexChanged, this, embeddingDatasetUpdate);
+
+
+
+    const auto clearRightClickClusterUpdate = [this]() -> void
+        {
+            
+            emit _chartWidget->getCommunicationObject().qt_js_removeRightClickIcon("Remove");
+            _settingsAction.getRightClickedCluster().setString("");
+        };
+    connect(&_settingsAction.getClearRightClickedCluster(), &TriggerAction::triggered, this, clearRightClickClusterUpdate);
+
+
+
 
     const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
         {
@@ -752,6 +766,9 @@ void CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder(const QString&
 void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QString& orderedClusters)
 {
     //aplit the const clusterNameAndLevel = `${clusterName} @%$,$%@ ${clusterLevel}`;
+    
+    _settingsAction.getRightClickedCluster().setString(orderedClusters);
+    /*
     qDebug() << "Cluster Name and Level: " << orderedClusters;
     QStringList clusterNameAndLevel = orderedClusters.split(" @%$,$%@ ");
     if (clusterNameAndLevel.size() == 2)
@@ -781,7 +798,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QSt
         }
         qDebug() << "Cluster Name: " << clusterName << " Cluster Level: " << clusterLevel;
     }
-
+    */
 }
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
