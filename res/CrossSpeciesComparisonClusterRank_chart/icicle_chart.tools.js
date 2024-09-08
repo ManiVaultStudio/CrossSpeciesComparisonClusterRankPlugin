@@ -15,6 +15,7 @@ var width;
 var height;
 var selectedClusterContainer = [];
 var isDebug = false;
+var previousClicked;
 function doALoadOfStuff() {
     if (data != "") {
         VisCreate();

@@ -402,7 +402,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passClusterOrderToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder);
-
+    connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passRightClickToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster);
     _settingsAction.getStatusChangedAction().setString("M");
 
 }
@@ -747,6 +747,41 @@ void CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder(const QString&
 {
     _settingsAction.getClusterOrder().setString(orderedClusters);
     //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder: Send cluster order to core"<< orderedClusters;
+}
+
+void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QString& orderedClusters)
+{
+    //aplit the const clusterNameAndLevel = `${clusterName} @%$,$%@ ${clusterLevel}`;
+    qDebug() << "Cluster Name and Level: " << orderedClusters;
+    QStringList clusterNameAndLevel = orderedClusters.split(" @%$,$%@ ");
+    if (clusterNameAndLevel.size() == 2)
+    {
+        QString clusterName = clusterNameAndLevel.at(0);
+        QString clusterLevelTemp = clusterNameAndLevel.at(1);
+        if (clusterName == "" || clusterLevelTemp == "")
+        {
+            return;
+        }
+        QString clusterLevel;
+        if (clusterLevelTemp == "1")
+        {
+            clusterLevel = "Top";
+        }
+        else if (clusterLevelTemp == "2")
+        {
+            clusterLevel = "Middle";
+        }
+        else if (clusterLevelTemp == "3")
+        {
+            clusterLevel = "Bottom";
+        }
+        else
+        {
+            clusterLevel = "Unknown";
+        }
+        qDebug() << "Cluster Name: " << clusterName << " Cluster Level: " << clusterLevel;
+    }
+
 }
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
