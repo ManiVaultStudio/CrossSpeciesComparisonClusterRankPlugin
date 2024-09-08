@@ -722,6 +722,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
     _removeTableSelection.setSerializationName("CSCCR:RemoveTableSelection");
     _clusterOrder.setSerializationName("CSCCR:ClusterOrder");
+    _rightClickedCluster.setSerializationName("CSCCR:RightClickedCluster");
+    _clearRightClickedCluster.setSerializationName("CSCCR:ClearRightClickedCluster");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
@@ -1402,6 +1404,8 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _geneNamesConnection.fromParentVariantMap(variantMap);
     _removeTableSelection.fromParentVariantMap(variantMap);
     _clusterOrder.fromParentVariantMap(variantMap);
+    _rightClickedCluster.fromParentVariantMap(variantMap);
+    _clearRightClickedCluster.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
 }
 
@@ -1427,6 +1431,8 @@ QVariantMap SettingsAction::toVariantMap() const
     _createPointSelectTree.insertIntoVariantMap(variantMap);
     _removeTableSelection.insertIntoVariantMap(variantMap);
     _clusterOrder.insertIntoVariantMap(variantMap);
+    _rightClickedCluster.insertIntoVariantMap(variantMap);
+    _clearRightClickedCluster.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }
