@@ -24,6 +24,7 @@ signals:
     // But other communication like messaging selection IDs can be handled the same
     void qt_js_setDataAndPlotInJS(const QString& data);
     void qt_js_removeClusterSelectionHighlight(const QString& data);
+    void qt_js_removeRightClickIcon(const QString& data);
 
     // Signals Qt internal
     // Used to inform the plugin about new selection: the plugin class then updates ManiVault's core

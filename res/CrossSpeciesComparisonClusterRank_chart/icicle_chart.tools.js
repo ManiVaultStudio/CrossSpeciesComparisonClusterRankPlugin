@@ -34,6 +34,11 @@ function removeRectHighlight(d) {
     }
 }
 
+function removeRightClickIcon(d) {
+    if (data != "") {
+        d3.selectAll(".magnifying-icon").remove();
+    }
+}
 
 function drawChart(d) {
 
