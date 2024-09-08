@@ -169,7 +169,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
         {
             
             emit _chartWidget->getCommunicationObject().qt_js_removeRightClickIcon("Remove");
-            _settingsAction.getRightClickedCluster().setString("");
+            //_settingsAction.getRightClickedCluster().setString("");
         };
     connect(&_settingsAction.getClearRightClickedCluster(), &TriggerAction::triggered, this, clearRightClickClusterUpdate);
 
