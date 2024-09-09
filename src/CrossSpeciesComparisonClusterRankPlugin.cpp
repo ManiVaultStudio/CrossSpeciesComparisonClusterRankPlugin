@@ -87,7 +87,6 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getGeneNamesConnection());
-    extraOptionsGroup->addAction(&_settingsAction.getClusterOrder());
     extraOptionsGroup->addAction(&_settingsAction.getGenerateTreeDataFilesPerClusterStart());
 
 
@@ -129,6 +128,8 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     
     mainOptionsGroup->addAction(&_settingsAction.getStatusChangedAction());
     mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
+    mainOptionsGroup->addAction(&_settingsAction.getRightClickedCluster());
+    mainOptionsGroup->addAction(&_settingsAction.getClearRightClickedCluster());
    
 
     //mainOptionsLayout->addWidget(subsamplingOptionsGroup->createCollapsedWidget(&getWidget()), 3);
@@ -161,6 +162,19 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
             _embeddingDataset = _settingsAction.getEmbeddingDataset().getCurrentDataset();
         };
     connect(&_settingsAction.getEmbeddingDataset(), &DatasetPickerAction::currentIndexChanged, this, embeddingDatasetUpdate);
+
+
+
+    const auto clearRightClickClusterUpdate = [this]() -> void
+        {
+            
+            emit _chartWidget->getCommunicationObject().qt_js_removeRightClickIcon("Remove");
+            //_settingsAction.getRightClickedCluster().setString("");
+        };
+    connect(&_settingsAction.getClearRightClickedCluster(), &TriggerAction::triggered, this, clearRightClickClusterUpdate);
+
+
+
 
     const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
         {
@@ -402,7 +416,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     // Update the selection (coming from PCP) in core
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passSelectionToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishSelection);
     connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passClusterOrderToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder);
-
+    connect(&_chartWidget->getCommunicationObject(), &ChartCommObject::passRightClickToCore, this, &CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster);
     _settingsAction.getStatusChangedAction().setString("M");
 
 }
@@ -747,6 +761,44 @@ void CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder(const QString&
 {
     _settingsAction.getClusterOrder().setString(orderedClusters);
     //qDebug() << "CrossSpeciesComparisonClusterRankPlugin::publishClusterOrder: Send cluster order to core"<< orderedClusters;
+}
+
+void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QString& orderedClusters)
+{
+    //aplit the const clusterNameAndLevel = `${clusterName} @%$,$%@ ${clusterLevel}`;
+    _settingsAction.getRightClickedCluster().setString("");
+    _settingsAction.getRightClickedCluster().setString(orderedClusters);
+    /*
+    qDebug() << "Cluster Name and Level: " << orderedClusters;
+    QStringList clusterNameAndLevel = orderedClusters.split(" @%$,$%@ ");
+    if (clusterNameAndLevel.size() == 2)
+    {
+        QString clusterName = clusterNameAndLevel.at(0);
+        QString clusterLevelTemp = clusterNameAndLevel.at(1);
+        if (clusterName == "" || clusterLevelTemp == "")
+        {
+            return;
+        }
+        QString clusterLevel;
+        if (clusterLevelTemp == "1")
+        {
+            clusterLevel = "Top";
+        }
+        else if (clusterLevelTemp == "2")
+        {
+            clusterLevel = "Middle";
+        }
+        else if (clusterLevelTemp == "3")
+        {
+            clusterLevel = "Bottom";
+        }
+        else
+        {
+            clusterLevel = "Unknown";
+        }
+        qDebug() << "Cluster Name: " << clusterName << " Cluster Level: " << clusterLevel;
+    }
+    */
 }
 
 void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)

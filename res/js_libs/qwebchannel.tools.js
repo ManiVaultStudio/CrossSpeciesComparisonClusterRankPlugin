@@ -12,6 +12,8 @@ try {
         QtBridge.qt_js_setDataAndPlotInJS.connect(function () { drawChart(arguments[0]); });   // drawChart is defined in icicle_chart.tools.js
         QtBridge.qt_js_removeClusterSelectionHighlight.connect(function () { removeRectHighlight(arguments[0]); });   // drawChart is defined in icicle_chart.tools.js
 
+        QtBridge.qt_js_removeRightClickIcon.connect(function () { removeRightClickIcon(arguments[0]); });  
+
         // confirm successful connection
         isQtAvailable = true;
         notifyBridgeAvailable();
@@ -63,6 +65,16 @@ function passClusterOrderToQT(dat) {
         QtBridge.js_qt_passClusterOrderToQT(dat);
     }
 }
+
+
+function passRightClickToQt(dat) {
+
+    if (isQtAvailable) {
+        QtBridge.js_qt_passRightClickToQt(dat);
+    }
+}
+
+
 
 // utility function: pipe errors to log
 window.onerror = function (msg, url, num) {

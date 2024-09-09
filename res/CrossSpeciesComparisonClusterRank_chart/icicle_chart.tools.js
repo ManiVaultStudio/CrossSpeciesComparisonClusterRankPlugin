@@ -15,6 +15,7 @@ var width;
 var height;
 var selectedClusterContainer = [];
 var isDebug = false;
+var previousClicked;
 function doALoadOfStuff() {
     if (data != "") {
         VisCreate();
@@ -33,6 +34,11 @@ function removeRectHighlight(d) {
     }
 }
 
+function removeRightClickIcon(d) {
+    if (data != "") {
+        d3.selectAll(".magnifying-icon").remove();
+    }
+}
 
 function drawChart(d) {
 

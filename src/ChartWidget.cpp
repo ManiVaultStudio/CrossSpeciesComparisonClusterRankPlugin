@@ -45,6 +45,11 @@ void ChartCommObject::js_qt_passClusterOrderToQT(const QString& data) {
     emit passClusterOrderToCore(data);
 }
 
+void ChartCommObject::js_qt_passRightClickToQt(const QString& data) {
+
+    // Notify ManiVault core and thereby other plugins about new selection
+    emit passRightClickToCore(data);
+}
 
 // =============================================================================
 // ChartWidget

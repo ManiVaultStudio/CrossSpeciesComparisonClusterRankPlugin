@@ -115,8 +115,10 @@ public: // Action getters
 
     TriggerAction& getGenerateTreeDataFilesPerClusterStart() { return _generateTreeDataFilesPerClusterStart; }
     StringAction& getClusterOrder() { return _clusterOrder; }
+    StringAction& getRightClickedCluster() { return _rightClickedCluster; }
+    TriggerAction& getClearRightClickedCluster() { return _clearRightClickedCluster; }
 
-
+     
 
     //DecimalAction& getTreeSimilarity() { return _treeSimilarity; }
     double* condensedDistanceMatrix(std::vector<float>& items);
@@ -172,4 +174,6 @@ protected:
     ToggleAction             _subsampleInplace;
     TriggerAction            _generateTreeDataFilesPerClusterStart;
     StringAction             _clusterOrder;
+    StringAction              _rightClickedCluster;
+    TriggerAction              _clearRightClickedCluster;
 };

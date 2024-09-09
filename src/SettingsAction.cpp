@@ -698,7 +698,9 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _subsampleByLevel(this, "Subsample By Level"),
     _subsamplePercentValue(this, "Subsample Percent Value"),
     _subsampleInplace(this, "Subsample Inplace"),
-    _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster")
+    _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster"),
+    _rightClickedCluster(this, "Right Clicked Cluster"),
+    _clearRightClickedCluster(this, "Clear Right Clicked Cluster")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -720,6 +722,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _geneNamesConnection.setSerializationName("CSCCR:GeneNamesConnection");
     _removeTableSelection.setSerializationName("CSCCR:RemoveTableSelection");
     _clusterOrder.setSerializationName("CSCCR:ClusterOrder");
+    _rightClickedCluster.setSerializationName("CSCCR:RightClickedCluster");
+    _clearRightClickedCluster.setSerializationName("CSCCR:ClearRightClickedCluster");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
@@ -741,6 +745,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _referenceTreeDataset.setToolTip("Reference Tree Dataset");
     _geneNamesConnection.setToolTip("Gene Names Connection");
     _clusterOrder.setToolTip("Cluster Order");
+    _rightClickedCluster.setToolTip("Right Clicked Cluster");
+    _clearRightClickedCluster.setToolTip("Clear Right Clicked Cluster");
     _removeTableSelection.setToolTip("Remove Table Selection");
     _subsampleDataStart.setToolTip("Subsample Data");
     _subsampleByLevel.setToolTip("Subsample By Level");
@@ -750,6 +756,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
     _subsamplePercentValue.initialize(1.00, 100.00, 15.00, 2);
+    _rightClickedCluster.setString("");
     _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Middle");
     _subsampleInplace.setChecked(true);
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
@@ -1288,6 +1295,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _createPointSelectTree.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _geneNamesConnection.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _clusterOrder.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _rightClickedCluster.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
+    _clearRightClickedCluster.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleDataStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleByLevel.setDefaultWidgetFlags(OptionsAction::ComboBox);
@@ -1396,6 +1405,8 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _geneNamesConnection.fromParentVariantMap(variantMap);
     _removeTableSelection.fromParentVariantMap(variantMap);
     _clusterOrder.fromParentVariantMap(variantMap);
+    _rightClickedCluster.fromParentVariantMap(variantMap);
+    _clearRightClickedCluster.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
 }
 
@@ -1421,6 +1432,8 @@ QVariantMap SettingsAction::toVariantMap() const
     _createPointSelectTree.insertIntoVariantMap(variantMap);
     _removeTableSelection.insertIntoVariantMap(variantMap);
     _clusterOrder.insertIntoVariantMap(variantMap);
+    _rightClickedCluster.insertIntoVariantMap(variantMap);
+    _clearRightClickedCluster.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }
