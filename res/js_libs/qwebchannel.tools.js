@@ -40,18 +40,22 @@ function notifyBridgeAvailable() {
 function passSelectionToQt(dat) {
 
     //convert dat to string from array by adding a separator and then pass it to Qt
+    /*
     if (dat != "") {
         dat = dat.join(" @%$,$%@ ");
     }
     else {
         dat = "";
     }
-
+    */
 
     if (isQtAvailable) {
         QtBridge.js_qt_passSelectionToQt(dat);
     }
 }
+
+
+
 
 function passClusterOrderToQT(dat) {
     //convert dat to string from array by adding a separator and then pass it to Qt

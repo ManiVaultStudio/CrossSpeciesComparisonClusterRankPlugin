@@ -130,6 +130,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     mainOptionsGroup->addAction(&_settingsAction.getClusterOrder());
     mainOptionsGroup->addAction(&_settingsAction.getRightClickedCluster());
     mainOptionsGroup->addAction(&_settingsAction.getClearRightClickedCluster());
+    mainOptionsGroup->addAction(&_settingsAction.getTopSelectedHierarchyStatus());
    
 
     //mainOptionsLayout->addWidget(subsamplingOptionsGroup->createCollapsedWidget(&getWidget()), 3);
@@ -801,7 +802,7 @@ void CrossSpeciesComparisonClusterRankPlugin::publishRightClickCluster(const QSt
     */
 }
 
-void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs)
+void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector<QString>& selectedIDs,const QString& topHselectedIDs)
 {
     auto clusterDataset= _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
     auto pointsDataset= _settingsAction.getMainPointsDataset().getCurrentDataset();
@@ -850,6 +851,8 @@ void CrossSpeciesComparisonClusterRankPlugin::publishSelection(const std::vector
 
             }
             _pauseSelectionEvent = true;
+            //qDebug() << topHselectedIDs;
+            _settingsAction.getTopSelectedHierarchyStatus().setString(topHselectedIDs);
             //need to trigger remove table selection event first
             _settingsAction.getRemoveTableSelection().trigger();
             pointsDataset->setSelectionIndices(selectedIndices);
