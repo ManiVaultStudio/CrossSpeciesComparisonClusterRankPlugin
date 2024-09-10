@@ -28,7 +28,7 @@ signals:
 
     // Signals Qt internal
     // Used to inform the plugin about new selection: the plugin class then updates ManiVault's core
-    void passSelectionToCore(const std::vector<QString>& selectionIDs);
+    void passSelectionToCore(const std::vector<QString>& selectionIDs, const QString& topHselectionIDs);
     void passClusterOrderToCore(const QString& selectionIDs);
     void passRightClickToCore(const QString& selectionIDs);
 
@@ -41,6 +41,7 @@ public slots:
 
 private:
     std::vector<QString> _selectedIDsFromJS;   // Used for converting incoming selection IDs from the js side
+    QString _selectedTopIDSFromJS;   // Used for converting incoming selection IDs from the js side
 };
 
 
