@@ -117,6 +117,7 @@ public: // Action getters
     StringAction& getClusterOrder() { return _clusterOrder; }
     StringAction& getRightClickedCluster() { return _rightClickedCluster; }
     TriggerAction& getClearRightClickedCluster() { return _clearRightClickedCluster; }
+    StringAction& getTopSelectedHierarchyStatus() { return _topSelectedHierarchyStatus; }
 
      
 
@@ -176,4 +177,5 @@ protected:
     StringAction             _clusterOrder;
     StringAction              _rightClickedCluster;
     TriggerAction              _clearRightClickedCluster;
+    StringAction               _topSelectedHierarchyStatus;
 };

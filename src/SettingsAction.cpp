@@ -700,7 +700,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _subsampleInplace(this, "Subsample Inplace"),
     _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster"),
     _rightClickedCluster(this, "Right Clicked Cluster"),
-    _clearRightClickedCluster(this, "Clear Right Clicked Cluster")
+    _clearRightClickedCluster(this, "Clear Right Clicked Cluster"),
+    _topSelectedHierarchyStatus(this, "Top Selected Hierarchy Status")
     //_treeSimilarity(this, "Tree Similarity")
 {
     setSerializationName("CSCCR:Cross-Species Comparison Cluster Rank Settings");
@@ -724,6 +725,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _clusterOrder.setSerializationName("CSCCR:ClusterOrder");
     _rightClickedCluster.setSerializationName("CSCCR:RightClickedCluster");
     _clearRightClickedCluster.setSerializationName("CSCCR:ClearRightClickedCluster");
+    _topSelectedHierarchyStatus.setSerializationName("CSCCR:TopSelectedHierarchyStatus");
     //_treeSimilarity.setSerializationName("CSCCR:TreeSimilarity");
 
     setText("Cross-Species Comparison Cluster Rank Settings");
@@ -747,6 +749,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _clusterOrder.setToolTip("Cluster Order");
     _rightClickedCluster.setToolTip("Right Clicked Cluster");
     _clearRightClickedCluster.setToolTip("Clear Right Clicked Cluster");
+    _topSelectedHierarchyStatus.setToolTip("Top Selected Hierarchy Status");
+    _topSelectedHierarchyStatus.setString("");
     _removeTableSelection.setToolTip("Remove Table Selection");
     _subsampleDataStart.setToolTip("Subsample Data");
     _subsampleByLevel.setToolTip("Subsample By Level");
@@ -1297,6 +1301,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _clusterOrder.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _rightClickedCluster.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _clearRightClickedCluster.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
+    _topSelectedHierarchyStatus.setDefaultWidgetFlags(StringAction::WidgetFlag::LineEdit);
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleDataStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleByLevel.setDefaultWidgetFlags(OptionsAction::ComboBox);
@@ -1407,6 +1412,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _clusterOrder.fromParentVariantMap(variantMap);
     _rightClickedCluster.fromParentVariantMap(variantMap);
     _clearRightClickedCluster.fromParentVariantMap(variantMap);
+    _topSelectedHierarchyStatus.fromParentVariantMap(variantMap);
     //_treeSimilarity.fromParentVariantMap(variantMap);
 }
 
@@ -1434,6 +1440,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _clusterOrder.insertIntoVariantMap(variantMap);
     _rightClickedCluster.insertIntoVariantMap(variantMap);
     _clearRightClickedCluster.insertIntoVariantMap(variantMap);
+    _topSelectedHierarchyStatus.insertIntoVariantMap(variantMap);
     //_treeSimilarity.insertIntoVariantMap(variantMap);
     return variantMap;
 }
