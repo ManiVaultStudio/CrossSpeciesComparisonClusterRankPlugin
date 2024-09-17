@@ -55,6 +55,15 @@ CrossSpeciesComparisonClusterRankPlugin::CrossSpeciesComparisonClusterRankPlugin
 
 void CrossSpeciesComparisonClusterRankPlugin::init()
 {
+    auto& shortcuts = getShortcuts();
+    shortcuts.add({ QKeySequence(Qt::Key_Escape), "Deselect", "Remove all selection" });
+    shortcuts.add({ QKeySequence(Qt::SHIFT), "Multi-Selection" ,"Mouse left click"});
+    
+    shortcuts.add({ QKeySequence(Qt::MouseButton::LeftButton), "Hover", "Count details" });
+    shortcuts.add({ QKeySequence(Qt::ALT), "Zoom in","Mouse left click on parent rectangle"});
+    shortcuts.add({ QKeySequence(Qt::ALT), "Zoom out", "Mouse left click on parent rectangle" });
+    getLearningCenterAction().setPluginTitle("Cluster Hierarchy View");
+    
     getWidget().setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
      
