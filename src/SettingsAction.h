@@ -44,6 +44,7 @@ struct PointDataStruct {
     std::vector<QString> dimensionNames;
 };
 
+
 class FetchMetaData;
 namespace mv
 {
@@ -110,8 +111,11 @@ public: // Action getters
     TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
     TriggerAction& getSubsampleDataStart() { return _subsampleDataStart; }
     OptionAction& getSubsampleByLevel() { return _subsampleByLevel; }
+
+    OptionAction& getSubsampleMainDatasetConvertTypeofFloat() { return _subsampleMainDatasetConvertTypeofFloat; }
     DecimalAction& getSubsamplePercentValue() { return _subsamplePercentValue; }
     ToggleAction& getSubsampleInplace() { return _subsampleInplace; }
+    ToggleAction& getSubsampleConvertMainDatasetFloatType() { return _subsampleConvertMainDatasetFloatType; }
 
     TriggerAction& getGenerateTreeDataFilesPerClusterStart() { return _generateTreeDataFilesPerClusterStart; }
     StringAction& getClusterOrder() { return _clusterOrder; }
@@ -125,7 +129,7 @@ public: // Action getters
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
     QString createJsonTreeFromNewick(QString tree, std::vector<QString> leafNames);
-    void populatePointData(QString& datasetId, PointDataStruct& pointDataValues);
+    void populatePointData(QString& datasetId, PointDataStruct& pointDataValues, bool isParentDataset, QString floatType);
     void populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap);
     void updateButtonTriggeredForTreeCreation();
     private:
@@ -171,8 +175,10 @@ protected:
     TriggerAction            _removeTableSelection;
     TriggerAction            _subsampleDataStart;
     OptionAction             _subsampleByLevel;
+    OptionAction             _subsampleMainDatasetConvertTypeofFloat;
     DecimalAction           _subsamplePercentValue;
     ToggleAction             _subsampleInplace;
+    ToggleAction             _subsampleConvertMainDatasetFloatType;
     TriggerAction            _generateTreeDataFilesPerClusterStart;
     StringAction             _clusterOrder;
     StringAction              _rightClickedCluster;

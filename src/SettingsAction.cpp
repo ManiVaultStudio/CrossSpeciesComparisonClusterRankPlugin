@@ -698,6 +698,8 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _subsampleByLevel(this, "Subsample By Level"),
     _subsamplePercentValue(this, "Subsample Percent Value"),
     _subsampleInplace(this, "Subsample Inplace"),
+    _subsampleConvertMainDatasetFloatType(this, "Subsample Convert Main Dataset Float Type"),
+    _subsampleMainDatasetConvertTypeofFloat(this, "Subsample Main Dataset Convert Type of Float"),
     _generateTreeDataFilesPerClusterStart(this, "Generate Tree Data Files Per Cluster"),
     _rightClickedCluster(this, "Right Clicked Cluster"),
     _clearRightClickedCluster(this, "Clear Right Clicked Cluster"),
@@ -754,15 +756,22 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _removeTableSelection.setToolTip("Remove Table Selection");
     _subsampleDataStart.setToolTip("Subsample Data");
     _subsampleByLevel.setToolTip("Subsample By Level");
+    _subsampleMainDatasetConvertTypeofFloat.setToolTip("Subsample Main Dataset Convert Type of Float");
     _subsamplePercentValue.setToolTip("Subsample Percent Value");
     _subsampleInplace.setToolTip("Subsample Inplace");
+    _subsampleConvertMainDatasetFloatType.setToolTip("Subsample Convert Main Dataset Float Type");
     _generateTreeDataFilesPerClusterStart.setToolTip("Generate Tree Data Files Per Cluster");
     //_treeSimilarity.setToolTip("Tree Similarity");
    // _treeSimilarity.initialize(0.0, 1.0, 1.0, 2);
     _subsamplePercentValue.initialize(1.00, 100.00, 15.00, 2);
     _rightClickedCluster.setString("");
-    _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Middle");
+    _subsampleByLevel.initialize(QStringList{ "Top","Middle","Bottom" }, "Bottom");
+    _subsampleMainDatasetConvertTypeofFloat.initialize(
+        QStringList{ "bfloat16",  "float32"},
+        "float32"
+    );
     _subsampleInplace.setChecked(true);
+    _subsampleConvertMainDatasetFloatType.setChecked(false);
     _mainPointsDataset.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
         });
@@ -987,6 +996,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
 
     const auto updateSubsampleDataStart = [this]() -> void {
         _subsampleDataStart.setDisabled(true);
+        _subsampleConvertMainDatasetFloatType.setDisabled(true);
         auto mainPointsDataset = _mainPointsDataset.getCurrentDataset();
         auto mainPointsDatasetId = mainPointsDataset->getId();
         auto speciesNamesDataset = _speciesNamesDataset.getCurrentDataset();
@@ -997,13 +1007,17 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         if (!speciesNamesDataset.isValid() || !mainPointsDataset.isValid() || !topHierarchyDataset.isValid() || !middleHierarchyDataset.isValid() || !bottomHierarchyDataset.isValid()) {
             qDebug() << "Datasets not valid! Cannot perform subsample operation. Select all datasets.";
             _subsampleDataStart.setDisabled(false);
+            _subsampleConvertMainDatasetFloatType.setDisabled(false);
+
             return;
         }
 
         auto start = std::chrono::high_resolution_clock::now();
         auto subsampleLevel = _subsampleByLevel.getCurrentText();
+        auto subsampleDatatype = _subsampleMainDatasetConvertTypeofFloat.getCurrentText();
         auto subsamplePercent = _subsamplePercentValue.getValue();
         auto subsampleInplace = _subsampleInplace.isChecked();
+        auto subsampleConvertMainDatasetFloatType = _subsampleConvertMainDatasetFloatType.isChecked();
         auto speciesData = mv::data().getDataset<Clusters>(speciesNamesDataset->getId());
         auto mainPointsData = mv::data().getDataset<Points>(mainPointsDataset->getId());
         auto topLevelData = mv::data().getDataset<Clusters>(topHierarchyDataset->getId());
@@ -1217,14 +1231,14 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         if (subsampleInplace) {
             qDebug() << "Replacing points inplace.";
             qDebug() << "Replacing parent point dataset inplace.";
-            populatePointData(mainPointsDatasetId, parentPointDataValues);
+            populatePointData(mainPointsDatasetId, parentPointDataValues, subsampleConvertMainDatasetFloatType, subsampleDatatype);
             qDebug() << "Replacing children point datasets inplace.";
             
             for (auto& childData : childrenPointDatasets)
             {
                 QString dataId = childData.first;
                 PointDataStruct dataValues = childData.second;
-                populatePointData(dataId, dataValues);
+                populatePointData(dataId, dataValues, false, "");
             }
             qDebug() << "Replacing children cluster datasets inplace.";
             
@@ -1244,7 +1258,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
             events().notifyDatasetAdded(parentDataset);
             QString parentID = parentDataset->getId();
             qDebug() << "Populating parent point dataset.";
-            populatePointData(parentID, parentPointDataValues);
+            populatePointData(parentID, parentPointDataValues, subsampleConvertMainDatasetFloatType, subsampleDatatype);
             qDebug() << "Creating children point datasets.";
             for (auto& childData : childrenPointDatasets)
             {
@@ -1253,7 +1267,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 auto childDataset = mv::data().createDataset("Points", dataId + "_subsampled", parentDataset);
                 events().notifyDatasetAdded(childDataset);
                 QString childID = childDataset->getId();
-                populatePointData(childID, dataValues);
+                populatePointData(childID, dataValues, false, "");
             }
             qDebug() << "Creating children cluster datasets.";
             for (auto& childData : childrenClusterDatasets)
@@ -1305,27 +1319,68 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
     _removeTableSelection.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleDataStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     _subsampleByLevel.setDefaultWidgetFlags(OptionsAction::ComboBox);
+    _subsampleMainDatasetConvertTypeofFloat.setDefaultWidgetFlags(OptionsAction::ComboBox);
     _subsamplePercentValue.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
     _subsampleInplace.setDefaultWidgetFlags(ToggleAction::CheckBox );
     _generateTreeDataFilesPerClusterStart.setDefaultWidgetFlags(TriggerAction::WidgetFlag::IconText);
     //_treeSimilarity.setDefaultWidgetFlags(DecimalAction::WidgetFlag::SpinBox | DecimalAction::WidgetFlag::Slider);
     _statusChangedAction.setString("M");
 }
-void SettingsAction::populatePointData(QString& datasetId, PointDataStruct& pointDataValues)
+
+
+void SettingsAction::populatePointData(QString& datasetId, PointDataStruct& pointDataValues, bool isConvert, QString floatType)
 {
     auto pointDataset = mv::data().getDataset<Points>(datasetId);
-    //std::vector<float>& pointVector, int& numPoints, int& numDimensions, std::vector<QString>& dimensionNames
+
     if (pointDataset.isValid())
     {
         pointDataset->setSelectionIndices({});
         if (pointDataValues.pointVector.size() > 0 && pointDataValues.numPoints > 0 && pointDataValues.numDimensions > 0) {
-            pointDataset->setData(pointDataValues.pointVector.data(), pointDataValues.numPoints, pointDataValues.numDimensions);
+            
+            if (isConvert && !floatType.isEmpty()) {
+
+                if (floatType == "bfloat16") {
+                    std::vector<__bfloat16> convertedData;
+                    convertedData.reserve(pointDataValues.pointVector.size());
+
+                    for (const auto& value : pointDataValues.pointVector) {
+                        convertedData.push_back(static_cast<__bfloat16>(value));
+                    }
+
+
+                    pointDataset->setData(convertedData.data(), pointDataValues.numPoints, pointDataValues.numDimensions);
+                }
+
+                else if (floatType == "float32") {
+                    std::vector<float> convertedData;
+                    convertedData.reserve(pointDataValues.pointVector.size());
+
+                    for (const auto& value : pointDataValues.pointVector) {
+                        convertedData.push_back(static_cast<float>(value));
+                    }
+
+                    pointDataset->setData(convertedData.data(), pointDataValues.numPoints, pointDataValues.numDimensions);
+                }
+
+                else {
+                    pointDataset->setData(pointDataValues.pointVector.data(), pointDataValues.numPoints, pointDataValues.numDimensions);
+                }
+            }
+            else {
+                pointDataset->setData(pointDataValues.pointVector.data(), pointDataValues.numPoints, pointDataValues.numDimensions);
+            }
+
+            
+            
             pointDataset->setDimensionNames(pointDataValues.dimensionNames);
             mv::events().notifyDatasetDataChanged(pointDataset);
         }
 
     }
 }
+
+
+
 void SettingsAction::populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap)
 {
 
