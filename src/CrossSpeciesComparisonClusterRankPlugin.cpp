@@ -105,7 +105,6 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleByLevel());
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleConvertMainDatasetFloatType());
-    subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleMainDatasetConvertTypeofFloat());
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsamplePercentValue());
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleInplace());
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleDataStart());

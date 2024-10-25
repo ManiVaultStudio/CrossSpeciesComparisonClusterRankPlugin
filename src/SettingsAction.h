@@ -36,14 +36,20 @@ class QMenu;
 class CrossSpeciesComparisonClusterRankPlugin;
 
 // Define the struct for PointData
-struct PointDataStruct {
+struct PointDataStructChild {
 
     std::vector<float> pointVector;
     int numPoints;
     int numDimensions;
     std::vector<QString> dimensionNames;
 };
+struct PointDataStructParent {
 
+    std::vector<__bfloat16> pointVector;
+    int numPoints;
+    int numDimensions;
+    std::vector<QString> dimensionNames;
+};
 
 class FetchMetaData;
 namespace mv
@@ -111,8 +117,6 @@ public: // Action getters
     TriggerAction& getRemoveTableSelection() { return _removeTableSelection; }
     TriggerAction& getSubsampleDataStart() { return _subsampleDataStart; }
     OptionAction& getSubsampleByLevel() { return _subsampleByLevel; }
-
-    OptionAction& getSubsampleMainDatasetConvertTypeofFloat() { return _subsampleMainDatasetConvertTypeofFloat; }
     DecimalAction& getSubsamplePercentValue() { return _subsamplePercentValue; }
     ToggleAction& getSubsampleInplace() { return _subsampleInplace; }
     ToggleAction& getSubsampleConvertMainDatasetFloatType() { return _subsampleConvertMainDatasetFloatType; }
@@ -129,7 +133,8 @@ public: // Action getters
     double* condensedDistanceMatrix(std::vector<float>& items);
     std::string mergeToNewick(int* merge, int numOfLeaves);
     QString createJsonTreeFromNewick(QString tree, std::vector<QString> leafNames);
-    void populatePointData(QString& datasetId, PointDataStruct& pointDataValues, bool isParentDataset, QString floatType);
+    void populatePointDataParent(QString& datasetId, PointDataStructParent& pointDataValues);
+    void populatePointDataChild(QString& datasetId, PointDataStructChild& pointDataValues);
     void populateClusterData(QString& datasetId, std::map<QString, std::pair<QColor, std::vector<int>>>& clusterMap);
     void updateButtonTriggeredForTreeCreation();
     private:
@@ -175,7 +180,6 @@ protected:
     TriggerAction            _removeTableSelection;
     TriggerAction            _subsampleDataStart;
     OptionAction             _subsampleByLevel;
-    OptionAction             _subsampleMainDatasetConvertTypeofFloat;
     DecimalAction           _subsamplePercentValue;
     ToggleAction             _subsampleInplace;
     ToggleAction             _subsampleConvertMainDatasetFloatType;
