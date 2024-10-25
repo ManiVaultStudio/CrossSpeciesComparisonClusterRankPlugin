@@ -119,8 +119,7 @@ public: // Action getters
     OptionAction& getSubsampleByLevel() { return _subsampleByLevel; }
     DecimalAction& getSubsamplePercentValue() { return _subsamplePercentValue; }
     ToggleAction& getSubsampleInplace() { return _subsampleInplace; }
-    ToggleAction& getSubsampleConvertMainDatasetFloatType() { return _subsampleConvertMainDatasetFloatType; }
-
+    QMessageBox* getSubsamplingPopupMessage() const { return _subsamplingPopupMessage; }
     TriggerAction& getGenerateTreeDataFilesPerClusterStart() { return _generateTreeDataFilesPerClusterStart; }
     StringAction& getClusterOrder() { return _clusterOrder; }
     StringAction& getRightClickedCluster() { return _rightClickedCluster; }
@@ -182,10 +181,10 @@ protected:
     OptionAction             _subsampleByLevel;
     DecimalAction           _subsamplePercentValue;
     ToggleAction             _subsampleInplace;
-    ToggleAction             _subsampleConvertMainDatasetFloatType;
     TriggerAction            _generateTreeDataFilesPerClusterStart;
     StringAction             _clusterOrder;
     StringAction              _rightClickedCluster;
     TriggerAction              _clearRightClickedCluster;
     StringAction               _topSelectedHierarchyStatus;
+    QMessageBox*               _subsamplingPopupMessage;
 };
