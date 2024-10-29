@@ -1079,7 +1079,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         std::vector<int> finalIndices;
         std::random_device rd;
         std::mt19937 g(rd());
-
+        qDebug() << "Shuffling and selecting points for subsampling...";
         if (0)
         {
             // Step 1: Calculate the total number of points across all keys
@@ -1161,6 +1161,7 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         parentPointDataValues.numDimensions = mainPointsNumofDims;
         parentPointDataValues.dimensionNames = mainPointsDimensions;
         std::vector<__bfloat16> parentPointVector(finalIndicesSize * mainPointsNumofDims);
+        qDebug() << "Parent point dataset created.";
         for (int i = 0; i < finalIndicesSize; i++) {
             for (int j = 0; j < mainPointsNumofDims; j++) {
                 float value = mainPointsData->getValueAt(finalIndices[i] * mainPointsNumofDims + j);
@@ -1168,13 +1169,16 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                 parentPointVector[i * mainPointsNumofDims + j] = bfloatValue;
             }
         }
+        qDebug() << "Parent point dataset populated.";
         parentPointDataValues.pointVector = parentPointVector;
         parentPointDataset.insert(std::make_pair(mainPointsDatasetId, parentPointDataValues));
         auto children = mainPointsData->getChildren();
+        qDebug() << "Number of children datasets: " << children.size();
         if (children.size() > 0)
         {
             for (auto child : children)
             {
+                qDebug() << "Processing child dataset: " << child->getGuiName();
                 QString idVal = child->getId();
                 if (child->getDataType() == ClusterType)
                 {
@@ -1222,9 +1226,10 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
                     pointDataValues.pointVector = pointVector;
                     childrenPointDatasets.insert(std::make_pair(idVal, pointDataValues));
                 }
-
+                qDebug() << "Child dataset processed.";
             }
         }
+        
         qDebug() << "Number of children cluster datasets: " << childrenClusterDatasets.size();
         qDebug() << "Number of children point datasets: " << childrenPointDatasets.size();
         if (subsampleInplace) {
