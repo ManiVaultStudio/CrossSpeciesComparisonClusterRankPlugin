@@ -1160,12 +1160,12 @@ SettingsAction::SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpe
         parentPointDataValues.numPoints = finalIndicesSize;
         parentPointDataValues.numDimensions = mainPointsNumofDims;
         parentPointDataValues.dimensionNames = mainPointsDimensions;
-        std::vector<__bfloat16> parentPointVector(finalIndicesSize * mainPointsNumofDims);
+        std::vector<float> parentPointVector(finalIndicesSize * mainPointsNumofDims); ////change to float for ci build __bfloat16 to float
         qDebug() << "Parent point dataset created.";
         for (int i = 0; i < finalIndicesSize; i++) {
             for (int j = 0; j < mainPointsNumofDims; j++) {
                 float value = mainPointsData->getValueAt(finalIndices[i] * mainPointsNumofDims + j);
-                __bfloat16 bfloatValue = static_cast<__bfloat16>(value);
+                float bfloatValue = static_cast<float>(value); ////change to float for ci build __bfloat16 to float
                 parentPointVector[i * mainPointsNumofDims + j] = bfloatValue;
             }
         }
