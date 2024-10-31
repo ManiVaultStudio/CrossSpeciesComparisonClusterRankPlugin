@@ -45,7 +45,7 @@ struct PointDataStructChild {
 };
 struct PointDataStructParent {
 
-    std::vector<__bfloat16> pointVector;
+    std::vector<float> pointVector; ////change to float for ci build __bfloat16 to float
     int numPoints;
     int numDimensions;
     std::vector<QString> dimensionNames;
