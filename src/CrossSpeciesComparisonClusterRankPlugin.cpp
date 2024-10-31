@@ -91,7 +91,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
     extraOptionsGroup->addAction(&_settingsAction.getCreatePointSelectTree());
-    extraOptionsGroup->addAction(&_settingsAction.getRemoveTableSelection());
+
     extraOptionsGroup->addAction(&_settingsAction.getFilterEditTreeDataset());
     extraOptionsGroup->addAction(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion());
     extraOptionsGroup->addAction(&_settingsAction.getReferenceTreeDataset());
@@ -140,7 +140,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     mainOptionsGroup->addAction(&_settingsAction.getRightClickedCluster());
     mainOptionsGroup->addAction(&_settingsAction.getClearRightClickedCluster());
     mainOptionsGroup->addAction(&_settingsAction.getTopSelectedHierarchyStatus());
-   
+    mainOptionsGroup->addAction(&_settingsAction.getRemoveTableSelection());
 
     //mainOptionsLayout->addWidget(subsamplingOptionsGroup->createCollapsedWidget(&getWidget()), 3);
     //mainOptionsLayout->addWidget(mainOptionsGroup->createCollapsedWidget(&getWidget()), 2);
