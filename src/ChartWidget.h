@@ -23,6 +23,7 @@ signals:
     // This specific signal is used to transfer data from ManiVault to the D3 plot
     // But other communication like messaging selection IDs can be handled the same
     void qt_js_setDataAndPlotInJS(const QString& data);
+    void qt_js_setClusterMarks(const QString& data);
     void qt_js_removeClusterSelectionHighlight(const QString& data);
     void qt_js_removeRightClickIcon(const QString& data);
 

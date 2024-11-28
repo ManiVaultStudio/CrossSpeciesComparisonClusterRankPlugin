@@ -183,8 +183,14 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
         };
     connect(&_settingsAction.getClearRightClickedCluster(), &TriggerAction::triggered, this, clearRightClickClusterUpdate);
 
-
-
+    const auto statusComplete = [this]() -> void
+        {
+            if (_settingsAction.getStatusChangedAction().getString()=="C")
+            {
+                hierarchyStrokeforSelected();
+            }
+        };
+    connect(&_settingsAction.getStatusChangedAction(), &StringAction::stringChanged, this, statusComplete);
 
     const auto clusterSelectionFromPopulationPyramidDatasetChange = [this]() -> void
         {
@@ -275,7 +281,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
         //}
         };
     connect(&_settingsAction.getTopHierarchyRelativeClusterCountInclusion(), &OptionsAction::selectedOptionsChanged, this, getTopHierarchyRelativeClusterCountInclusionUpdate);
-
+    //connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, hierarchyStrokeforSelected);
     const auto getCreatePointSelectTreeUpdate = [this]() -> void
         {
             
@@ -451,6 +457,95 @@ QVariantMap createNode(const QString& name, const QString& color, const QVariant
     if (!children.isEmpty())
         node.insert("children", children);
     return node;
+}
+
+void CrossSpeciesComparisonClusterRankPlugin::hierarchyStrokeforSelected()
+{
+    {
+        auto clusterDataset = _settingsAction.getHierarchyBottomClusterDataset().getCurrentDataset();
+        auto pointsDataset = _settingsAction.getMainPointsDataset().getCurrentDataset();
+        auto embeddingDataset = _settingsAction.getEmbeddingDataset().getCurrentDataset();
+        QStringList partialClusterNames;
+        QStringList fullClusterNames;
+
+        if (clusterDataset.isValid() && embeddingDataset.isValid() && pointsDataset.isValid()) {
+            std::vector<std::uint32_t> selectedIndices = pointsDataset->getSelectionIndices();
+            if (selectedIndices.size() > 0) { // Get the selection indices from the points dataset
+
+                // Sort the selected indices
+                std::sort(selectedIndices.begin(), selectedIndices.end());
+
+                // Get the clusters dataset
+                auto clustersDataset = mv::data().getDataset<Clusters>(clusterDataset->getId());
+                auto clusters = clustersDataset->getClusters();
+
+                for (auto cluster : clusters) {
+                    auto clusterName = cluster.getName();
+                    auto clusterIndices = cluster.getIndices();
+                    // Sort the cluster indices
+                    std::sort(clusterIndices.begin(), clusterIndices.end());
+
+                    // Debug: Print selectedIndices and clusterIndices
+                   // qDebug() << "Selected Indices: " << selectedIndices;
+                    //qDebug() << "Cluster Indices for " << clusterName << ": " << clusterIndices;
+
+                    // Check if all indices of clusterIndices are present in selectedIndices
+                    bool allPresent = std::includes(selectedIndices.begin(), selectedIndices.end(), clusterIndices.begin(), clusterIndices.end());
+
+                    // Check if at least one index of clusterIndices is present in selectedIndices
+                    bool atLeastOnePresent = std::any_of(clusterIndices.begin(), clusterIndices.end(), [&selectedIndices](uint32_t index) {
+                        return std::binary_search(selectedIndices.begin(), selectedIndices.end(), index);
+                    });
+
+                    // If all indices are present
+                    if (allPresent) {
+                        fullClusterNames.append(clusterName);
+                    }
+                    // Else if at least one index is present
+                    else if (atLeastOnePresent) {
+                        partialClusterNames.append(clusterName);
+                    }
+                }
+                //qDebug() << "Full Cluster Names: " << fullClusterNames;
+                //qDebug() << "Partial Cluster Names: " << partialClusterNames;
+                QString fullList="";
+                QString partialList = "";
+                if (fullClusterNames.size() > 0)
+                {
+                    fullList = fullClusterNames.join("@$%%$@");
+                }
+                if (partialClusterNames.size() > 0)
+                {
+                    partialList = partialClusterNames.join("@$%%$@");
+                }
+                QString totalList = "";
+                if (fullClusterNames.size() > 0 && partialClusterNames.size() > 0)
+                {
+                    totalList = fullList + "##%%$joinHere$%%##" + partialList;
+                }
+                else if (fullClusterNames.size() > 0)
+                {
+                    totalList = fullList + "##%%$joinHere$%%##";
+                }
+                else if (partialClusterNames.size() > 0)
+                {
+                    totalList = "##%%$joinHere$%%##" + partialList;
+                }
+                else
+                {
+                    totalList = "##%%$joinHere$%%##";
+                }
+                
+                emit _chartWidget->getCommunicationObject().qt_js_setClusterMarks(totalList);
+
+            }
+            else
+            {
+                //qDebug() << "No indices present";
+            }
+        }
+
+    }
 }
 
 QVariantMap createLeaf(const QString& name, const QString& color, int value)
@@ -694,6 +789,7 @@ void CrossSpeciesComparisonClusterRankPlugin::convertDataAndUpdateChart()
             {
 
                 emit _chartWidget->getCommunicationObject().qt_js_setDataAndPlotInJS(jsonString);
+                hierarchyStrokeforSelected();
             }
             else
             {
