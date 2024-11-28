@@ -47,7 +47,7 @@ public slots:
     /** Converts ManiVault's point data to a json-like data structure that Qt can pass to the JS code */
     void convertDataAndUpdateChart();
     void computeHierarchy();
-
+    void hierarchyStrokeforSelected();
 
 private:
     /** Published selections received from the JS side to ManiVault's core */
@@ -57,6 +57,7 @@ private:
     QJsonObject createJsonTree(std::map<QString, int> speciesSelectedIndicesCounter);
     QString getCurrentDataSetID() const;
     SettingsAction& getSettingsAction() { return _settingsAction; }
+
 public: // Serialization
 
     /**

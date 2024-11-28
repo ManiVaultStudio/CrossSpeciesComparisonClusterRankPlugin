@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html oncontextmenu="return false;">
+<html lang="en" oncontextmenu="return false;">
 <head>
     <title>Compare CrossSpeciesComparison Cluster Hierarchy Chart</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="utf8" http-equiv="encoding">
+
+    <!--<link rel="stylesheet" type="text/css" href="../js_libs/icicle-chart.min.css">-->
 
     <style></style>
 
@@ -19,30 +23,22 @@
         };
     </script>
 </head>
-<body oncontextmenu="return false;" style="overflow: hidden;">
+<body oncontextmenu="return false;">
     <div id="my_dataviz"></div>
     <!-- d3 -->
     <script type="text/javascript" src="../js_libs/d3.v5.min.js"></script>
+    
     <!-- qt connection -->
-    <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
-    <script type="text/javascript" src="../js_libs/qwebchannel.tools.js"></script>
+    <script type="text/javascript">
+        var isDebug = false;// Set this flag as needed
+        if (!isDebug) {
+            document.write('<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"><\/script>');
+            document.write('<script type="text/javascript" src="../js_libs/qwebchannel.tools.js"><\/script>');
+        }
+    </script>
+    
     <script type="text/javascript" src="../js_libs/icicle-chart.min.js"></script>
     <!-- plot and communication functions // this has to be loaded after the other scripts -->
     <script src="icicle_chart.tools.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
