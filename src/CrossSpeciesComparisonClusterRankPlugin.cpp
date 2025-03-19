@@ -62,7 +62,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     shortcuts.add({ QKeySequence(Qt::MouseButton::LeftButton), "Hover", "Count details" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Zoom in","Mouse left click on parent rectangle"});
     shortcuts.add({ QKeySequence(Qt::ALT), "Zoom out", "Mouse left click on parent rectangle" });
-    getLearningCenterAction().setPluginTitle("Cluster Hierarchy View");
+    //getLearningCenterAction().setPluginTitle("Cluster Hierarchy View");
     
     getWidget().setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
