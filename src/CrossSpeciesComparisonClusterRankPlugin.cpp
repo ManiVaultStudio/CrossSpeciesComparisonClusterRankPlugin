@@ -86,7 +86,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
     mainOptionsLayout->setContentsMargins(0, 0, 0, 0);
     auto extraOptionsGroup = new VerticalGroupAction(this, "Settings");
 
-    extraOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    extraOptionsGroup->setIcon(mv::util::StyledIcon("cog"));
 
     extraOptionsGroup->addAction(&_settingsAction.getSelectedClusterNames());
     extraOptionsGroup->addAction(&_settingsAction.getOptionSelectionAction());
@@ -101,7 +101,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     auto subsamplingOptionsGroup = new VerticalGroupAction(this, "Subsampling");
 
-    subsamplingOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    subsamplingOptionsGroup->setIcon(mv::util::StyledIcon("cog"));
 
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsampleByLevel());
     subsamplingOptionsGroup->addAction(&_settingsAction.getSubsamplePercentValue());
@@ -110,7 +110,7 @@ void CrossSpeciesComparisonClusterRankPlugin::init()
 
     //auto mainOptionsGroup = new HorizontalGroupAction(this, "Trigger");
     auto mainOptionsGroup = new VerticalGroupAction(this, "Linking Options");
-    mainOptionsGroup->setIcon(Application::getIconFont("FontAwesome").getIcon("link"));
+    mainOptionsGroup->setIcon(mv::util::StyledIcon("link"));
 
     auto dividerActionMain1 = new QAction("Dataset");
     dividerActionMain1->setEnabled(false);
@@ -1217,9 +1217,9 @@ QVariantMap CrossSpeciesComparisonClusterRankPlugin::toVariantMap() const
 // Plugin Factory 
 // =============================================================================
 
-QIcon CrossSpeciesComparisonClusterRankPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
+CrossSpeciesComparisonClusterRankPluginFactory::CrossSpeciesComparisonClusterRankPluginFactory()
 {
-    return mv::Application::getIconFont("FontAwesome").getIcon("sitemap", color);
+    setIconByName("sitemap");
 }
 
 ViewPlugin* CrossSpeciesComparisonClusterRankPluginFactory::produce()
@@ -1256,7 +1256,7 @@ mv::gui::PluginTriggerActions CrossSpeciesComparisonClusterRankPluginFactory::ge
 
         if (isValidDataset)
         {
-            auto pluginTriggerAction = new PluginTriggerAction(const_cast<CrossSpeciesComparisonClusterRankPluginFactory*>(this), this, "Cross-Species Comparison Cluster Rank View", "Cross-Species Comparison Cluster Rank visualization", getIcon(), [this, getPluginInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto pluginTriggerAction = new PluginTriggerAction(const_cast<CrossSpeciesComparisonClusterRankPluginFactory*>(this), this, "Cross-Species Comparison Cluster Rank View", "Cross-Species Comparison Cluster Rank visualization", StyledIcon("sitemap"), [this, getPluginInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 for (auto dataset : datasets)
                     getPluginInstance()->loadData(Datasets({ dataset }));
 

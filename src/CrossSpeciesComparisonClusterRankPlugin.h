@@ -5,7 +5,7 @@
 #include <Dataset.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
-#include<CrossSpeciesComparisonTreeData.h>
+#include <CrossSpeciesComparisonTreeData.h>
 #include <widgets/DropWidget.h>
 #include "SettingsAction.h"
 #include <QWidget>
@@ -103,9 +103,6 @@ public:
     /** Destructor */
     ~CrossSpeciesComparisonClusterRankPluginFactory() override {}
     
-    /** Get plugin icon */
-    QIcon getIcon(const QColor& color = Qt::black) const override;
-
     /** Creates an instance of the CrossSpeciesComparisonClusterRank view plugin */
     ViewPlugin* produce() override;
 
