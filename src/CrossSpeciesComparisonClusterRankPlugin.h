@@ -98,7 +98,7 @@ class CrossSpeciesComparisonClusterRankPluginFactory : public ViewPluginFactory
 public:
 
     /** Default constructor */
-    CrossSpeciesComparisonClusterRankPluginFactory() {}
+    CrossSpeciesComparisonClusterRankPluginFactory();
 
     /** Destructor */
     ~CrossSpeciesComparisonClusterRankPluginFactory() override {}

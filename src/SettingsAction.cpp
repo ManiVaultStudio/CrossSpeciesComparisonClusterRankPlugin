@@ -1416,7 +1416,7 @@ inline SettingsAction::OptionSelectionAction::OptionSelectionAction(SettingsActi
     _settingsAction(SettingsAction)
 {
     setText("Options");
-    setIcon(Application::getIconFont("FontAwesome").getIcon("wrench"));
+    setIcon(mv::util::StyledIcon("wrench"));
     //addAction(&_settingsAction.getMainPointsDataset());
     //addAction(&_settingsAction.getHierarchyTopClusterDataset());
     //addAction(&_settingsAction.getHierarchyMiddleClusterDataset());
