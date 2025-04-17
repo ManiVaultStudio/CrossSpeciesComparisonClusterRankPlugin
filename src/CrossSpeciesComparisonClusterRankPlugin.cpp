@@ -14,7 +14,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include "ClusterData/ClusterData.h"
-#include <CrossSpeciesComparisonTreeData.h>
+#include <CrossSpeciesComparisonTreeData/CrossSpeciesComparisonTreeData.h>
 #include "PointData/PointData.h"
 #include "lib/JSONnlohmann/json.hpp"
 #include "lib/Clustering/fastcluster.h"

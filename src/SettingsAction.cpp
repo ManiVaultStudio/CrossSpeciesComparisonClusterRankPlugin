@@ -5,7 +5,7 @@
 #include <QtConcurrent>
 #include <iostream>
 #include <algorithm>
-#include <CrossSpeciesComparisonTreeData.h>
+#include <CrossSpeciesComparisonTreeData/CrossSpeciesComparisonTreeData.h>
 #include "lib/Distance/annoylib.h"
 #include "lib/Distance/kissrandom.h"
 #include "lib/JSONnlohmann/json.hpp"
