@@ -5,7 +5,7 @@
 #include <Dataset.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
-#include <CrossSpeciesComparisonTreeData.h>
+#include <CrossSpeciesComparisonTreeData/CrossSpeciesComparisonTreeData.h>
 #include <widgets/DropWidget.h>
 #include "SettingsAction.h"
 #include <QWidget>
