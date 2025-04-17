@@ -86,7 +86,7 @@ source_group( LibFiles FILES ${LIBS})
 # CMake Target
 # -----------------------------------------------------------------------------
 # Create dynamic library for the plugin
-add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${RENDER_SOURCES} ${RESOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${PLUGIN_SOURCES} ${AUX} ${WEB} ${RESOURCE_FILES} ${LIBS})
 
 # -----------------------------------------------------------------------------
 # Target include directories
