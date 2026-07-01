@@ -3,7 +3,7 @@
 #include "ChartWidget.h"
 
 #include <DatasetsMimeData.h>
-
+#include <util/Serialization.h>
 #include <vector>
 #include <random>
 #include <QString>
