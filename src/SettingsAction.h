@@ -19,6 +19,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <QComboBox>
+#include <QMessageBox>
 #include <QGroupBox>
 #include <QPushButton>
 #include <QGridLayout>
