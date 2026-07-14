@@ -29,6 +29,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <string>
+#include <QMessageBox>
 #include "actions/VariantAction.h"
 #include "actions/GroupAction.h"
 using namespace mv::gui;
