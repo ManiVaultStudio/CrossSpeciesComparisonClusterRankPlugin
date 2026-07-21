@@ -21,7 +21,7 @@ class XSCClusterRankPluginConan(ConanFile):
     description = """Viewer of cell XSCTreeData data as described in a .swc file."""
     topics = ("manivault", "plugin", "view", "XSCClusterRankPlugin")
     url = "https://github.com/ManiVaultStudio/XSCClusterRankPlugin"
-    author = "julianthijssen@gmail.com"  # conan recipe author
+    author = "sbasu"  # conan recipe author
     license = "LGPL 3.0"
 
     short_paths = True
