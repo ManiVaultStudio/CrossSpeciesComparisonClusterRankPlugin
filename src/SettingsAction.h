@@ -35,7 +35,7 @@
 #include "actions/GroupAction.h"
 using namespace mv::gui;
 class QMenu;
-class CrossSpeciesComparisonClusterRankPlugin;
+class XSCClusterRankPlugin;
 
 // Define the struct for PointData
 struct PointDataStructChild {
@@ -95,7 +95,7 @@ namespace mv
         };
 
     public:
-        SettingsAction(CrossSpeciesComparisonClusterRankPlugin& CrossSpeciesComparisonClusterRankPlugins);
+        SettingsAction(XSCClusterRankPlugin& XSCClusterRankPlugins);
 
 public: // Action getters
 
@@ -157,7 +157,7 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 protected:
-    CrossSpeciesComparisonClusterRankPlugin& _crossSpeciesComparisonClusterRankPlugin;
+    XSCClusterRankPlugin& _XSCClusterRankPlugin;
     DatasetPickerAction    _mainPointsDataset;
     DatasetPickerAction    _hierarchyTopClusterDataset;
     DatasetPickerAction    _hierarchyMiddleClusterDataset;
